@@ -15,13 +15,12 @@ python -m sim.run --tables 1000 --output results/mixed.json
 ```
 
 `pip install -r requirements.txt` also works. The requirements file intentionally
-has no mandatory packages: eval7 was unavailable from the offline installation
-cache, so the tested primary evaluator uses the standard library. Neither numpy
-nor a package download is required. To enable eval7, supply its compatible wheel
-and dependencies locally, install with `pip install --no-index --find-links
-/path/to/wheels eval7`, then rerun the tests and benchmarks. eval7 is selected
-automatically when importable. Installation from an online package index is not
-part of the offline workflow.
+has no mandatory packages: the standard-library evaluator is a fully tested
+primary path, so the repo runs with no downloads at all. eval7 is selected
+automatically when importable, and both backends are now benchmark- and
+simulation-tested in this venv (`uv pip install eval7 --python .venv/bin/python`;
+the plain `pip` on this machine belongs to a different Python). If eval7 is
+missing on the day, nothing needs to change.
 
 Run one hero against seven copies of a baseline:
 
@@ -103,7 +102,12 @@ accepts other hole counts, but still deals five board cards and eight players;
 it rejects decks too small to do so. Suit-isomorphic classes are safe only for
 suit-symmetric rules; supply a custom classifier otherwise. More hole cards can
 create many more classes, so the five-minute budget is not guaranteed for every
-variant. Reduce samples for the initial submission and retain the metadata.
+variant. Measured on this laptop: standard hold'em (169 classes, eval7 or the
+built-in ranker) regenerates in under 30 seconds, but a variant module with a
+custom Python `rank` function runs roughly 8x slower per class — the 81-class
+short deck took 3:16 at 20,000 samples. Day-of rule: for any custom-ranking
+variant, generate the first table with `--samples 10000`, submit the T1 floor,
+then regenerate at full samples in the background. Retain the metadata.
 
 Switch the data/ranking configuration in `bot/tables.py` and regenerate push/fold
 data with the new equity file. For changed postflop rules, set `FEATURE_EXTRACTOR`
