@@ -1,7 +1,7 @@
 # No mandatory packages: the standard-library evaluator is a fully tested
 # primary path, so `pip install -r requirements.txt` needs no network.
-# eval7 is optional acceleration, auto-selected when importable; it is installed
-# in this venv (via `uv pip install eval7 --python .venv/bin/python`) and both
-# backends pass the same tests, benchmarks, and 1,000-table simulation with
-# identical results. numpy is permitted but unnecessary. The repository itself
-# makes no network calls.
+# eval7 is optional acceleration, auto-selected when importable. The verified
+# version is eval7==0.1.11; see the README for offline (wheel) and online
+# install commands and for the backend-equivalence evidence (direct agreement
+# test plus a same-seed byte-identical equity-table regeneration).
+# numpy is permitted but unnecessary. The repository makes no network calls.

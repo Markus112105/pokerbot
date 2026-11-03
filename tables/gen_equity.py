@@ -165,7 +165,11 @@ def main():
                       args.samples, args.workers, args.seed,
                       classify)
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(result, indent=2) + "\n")
+    # Replace atomically: a bot importing bot/tables.py mid-write must never
+    # see a truncated JSON file.
+    tmp = args.output.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(result, indent=2) + "\n")
+    os.replace(tmp, args.output)
     elapsed = time.perf_counter() - start
     metadata = {"samples_per_class_per_opponent_count": args.samples,
                 "seed": args.seed, "seconds": elapsed, "classes": len(result),

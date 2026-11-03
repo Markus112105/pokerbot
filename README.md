@@ -16,11 +16,16 @@ python -m sim.run --tables 1000 --output results/mixed.json
 
 `pip install -r requirements.txt` also works. The requirements file intentionally
 has no mandatory packages: the standard-library evaluator is a fully tested
-primary path, so the repo runs with no downloads at all. eval7 is selected
-automatically when importable, and both backends are now benchmark- and
-simulation-tested in this venv (`uv pip install eval7 --python .venv/bin/python`;
-the plain `pip` on this machine belongs to a different Python). If eval7 is
-missing on the day, nothing needs to change.
+primary path, so the repo runs with no downloads at all. eval7 (verified at
+0.1.11) is selected automatically when importable. On an offline machine,
+enable it from a locally supplied wheel: `pip install --no-index --find-links
+/path/to/wheels eval7`; with network, `uv pip install eval7 --python
+.venv/bin/python` (a bare `pip` may belong to a different Python). Backend
+equivalence is established directly, not by comparing tournament scores:
+`tests/test_backends.py` asserts category and pairwise-ordering agreement, and
+regenerating the equity table under eval7 with the same seed reproduced the
+committed python-backend JSON byte for byte (~13.5M sampled showdowns). If
+eval7 is missing on the day, nothing needs to change.
 
 Run one hero against seven copies of a baseline:
 
@@ -102,12 +107,17 @@ accepts other hole counts, but still deals five board cards and eight players;
 it rejects decks too small to do so. Suit-isomorphic classes are safe only for
 suit-symmetric rules; supply a custom classifier otherwise. More hole cards can
 create many more classes, so the five-minute budget is not guaranteed for every
-variant. Measured on this laptop: standard hold'em (169 classes, eval7 or the
-built-in ranker) regenerates in under 30 seconds, but a variant module with a
-custom Python `rank` function runs roughly 8x slower per class — the 81-class
-short deck took 3:16 at 20,000 samples. Day-of rule: for any custom-ranking
-variant, generate the first table with `--samples 10000`, submit the T1 floor,
-then regenerate at full samples in the background. Retain the metadata.
+variant. Measured on this laptop at 20,000 samples: standard hold'em is 6.4 s
+with eval7 (0.04 s/class) and 25.3 s with the built-in ranker (0.15 s/class),
+while a variant module with a custom Python `rank` function costs about
+2.4 s/class — 16x the built-in ranker — so the 81-class short deck took 3:16
+and a 169-class custom variant projects to ~6:50, over the five-minute budget.
+Day-of rule: for any custom-ranking variant, generate the first table with
+`--samples 10000` (~3:25 at 169 classes), submit the T1 floor, regenerate at
+full samples in the background, and then **resubmit**: tables load once at
+import, so a running bot never picks up a regenerated file. The generator
+writes the table atomically, so a regeneration cannot corrupt a concurrent
+import. Retain the metadata.
 
 Switch the data/ranking configuration in `bot/tables.py` and regenerate push/fold
 data with the new equity file. For changed postflop rules, set `FEATURE_EXTRACTOR`
