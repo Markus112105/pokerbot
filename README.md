@@ -1,5 +1,25 @@
 # Offline pokerbot
 
+## The strategy in plain words
+
+Most teams will try to build a bot that plays brilliant poker — ours is built
+to simply never die. The competition scores you on where you finish at each
+table, not how many chips you win, and the field will be full of student bots
+that play way too many hands and knock each other out. So our bot folds almost
+everything early and lets the fireworks happen around it, then switches gears
+as the blinds get big: it follows a pre-calculated "shove or fold" chart for
+short stacks (math that's basically solved), and before any big risk it asks
+"is this gamble actually worth it given the prize structure?" instead of just
+chasing chips. Along the way it takes cheap notes on each opponent — steal
+from the ones who always fold, never bluff the ones who always call. The real
+difference, though, is engineering: every bot gets just one millisecond to
+act, and any crash or delay means an automatic fold — so instead of doing
+fancy calculations live, we did all the heavy math at home and the bot just
+looks up answers, instantly, every single time. It will work because
+tight-and-reliable beats clever-and-crashing in a survival game: we don't have
+to outplay anyone, we just have to still be standing while everyone else's
+bots knock each other out or break.
+
 Python 3.11 preparation repo for the rules in `no-limit-pokerbot-playbook.md`.
 The competition kit remains authoritative for the actual variant and interface.
 All bot, generator, benchmark, and simulator execution is offline.
