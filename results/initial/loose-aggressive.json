@@ -1,0 +1,128 @@
+{
+  "tables": 1000,
+  "seed": 1,
+  "lineup": [
+    "loose-aggressive",
+    "loose-aggressive",
+    "loose-aggressive",
+    "loose-aggressive",
+    "loose-aggressive",
+    "loose-aggressive",
+    "loose-aggressive"
+  ],
+  "payouts": [
+    10,
+    7,
+    5,
+    3,
+    2,
+    1,
+    0,
+    0
+  ],
+  "average_points": {
+    "loose-aggressive": 2.944241,
+    "hero": 7.390314
+  },
+  "hero_standard_error": 0.052023,
+  "finishing_position_histogram": {
+    "1": 212.0,
+    "2": 709.761905,
+    "3": 49.428571,
+    "4": 14.028571,
+    "5": 4.695238,
+    "6": 3.361905,
+    "7": 3.361905,
+    "8": 3.361905
+  },
+  "histogram_note": "Tied finishes split counts; cap survivors use ICM rank probabilities.",
+  "errors": 0,
+  "timeouts": 26,
+  "capped_tables": 0,
+  "timeout_details": [
+    {
+      "table": 104,
+      "bot": "hero",
+      "hand": 16,
+      "street": "flop",
+      "wall_ms": 1.5055,
+      "cpu_ms": 0.100833
+    },
+    {
+      "table": 138,
+      "bot": "hero",
+      "hand": 10,
+      "street": "flop",
+      "wall_ms": 5.325084,
+      "cpu_ms": 0.104041
+    },
+    {
+      "table": 192,
+      "bot": "hero",
+      "hand": 11,
+      "street": "flop",
+      "wall_ms": 5.098709,
+      "cpu_ms": 5.017792
+    },
+    {
+      "table": 211,
+      "bot": "loose-aggressive",
+      "hand": 6,
+      "street": "river",
+      "wall_ms": 7.44475,
+      "cpu_ms": 0.084791
+    },
+    {
+      "table": 211,
+      "bot": "hero",
+      "hand": 6,
+      "street": "river",
+      "wall_ms": 1.614458,
+      "cpu_ms": 0.141083
+    },
+    {
+      "table": 211,
+      "bot": "hero",
+      "hand": 27,
+      "street": "flop",
+      "wall_ms": 1.048917,
+      "cpu_ms": 0.123625
+    },
+    {
+      "table": 211,
+      "bot": "hero",
+      "hand": 31,
+      "street": "flop",
+      "wall_ms": 1.599709,
+      "cpu_ms": 0.098167
+    },
+    {
+      "table": 212,
+      "bot": "loose-aggressive",
+      "hand": 33,
+      "street": "flop",
+      "wall_ms": 1.041959,
+      "cpu_ms": 0.079167
+    },
+    {
+      "table": 212,
+      "bot": "hero",
+      "hand": 47,
+      "street": "preflop",
+      "wall_ms": 2.471625,
+      "cpu_ms": 0.025417
+    },
+    {
+      "table": 212,
+      "bot": "hero",
+      "hand": 48,
+      "street": "preflop",
+      "wall_ms": 1.436125,
+      "cpu_ms": 0.049167
+    }
+  ],
+  "p99_decision_ms": 0.043084,
+  "hero_p99_decision_ms": 0.058708,
+  "max_decision_ms": 7.44475,
+  "decisions": 217226
+}

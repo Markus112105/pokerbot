@@ -1,0 +1,120 @@
+{
+  "tables": 1000,
+  "seed": 1,
+  "lineup": [
+    "tight-passive",
+    "tight-passive",
+    "tight-passive",
+    "tight-passive",
+    "tight-passive",
+    "tight-passive",
+    "tight-passive"
+  ],
+  "payouts": [
+    10,
+    7,
+    5,
+    3,
+    2,
+    1,
+    0,
+    0
+  ],
+  "average_points": {
+    "tight-passive": 3.60116,
+    "hero": 2.79188
+  },
+  "hero_standard_error": 0.132501,
+  "finishing_position_histogram": {
+    "1": 236.96,
+    "2": 12.04,
+    "3": 23.0,
+    "4": 28.0,
+    "5": 41.0,
+    "6": 57.0,
+    "7": 109.0,
+    "8": 493.0
+  },
+  "histogram_note": "Tied finishes split counts; cap survivors use ICM rank probabilities.",
+  "errors": 0,
+  "timeouts": 9,
+  "capped_tables": 634,
+  "timeout_details": [
+    {
+      "table": 62,
+      "bot": "tight-passive",
+      "hand": 87,
+      "street": "flop",
+      "wall_ms": 1.049209,
+      "cpu_ms": 1.049333
+    },
+    {
+      "table": 145,
+      "bot": "tight-passive",
+      "hand": 111,
+      "street": "flop",
+      "wall_ms": 2.098084,
+      "cpu_ms": 2.098375
+    },
+    {
+      "table": 268,
+      "bot": "tight-passive",
+      "hand": 49,
+      "street": "flop",
+      "wall_ms": 1.056084,
+      "cpu_ms": 0.02525
+    },
+    {
+      "table": 322,
+      "bot": "tight-passive",
+      "hand": 57,
+      "street": "flop",
+      "wall_ms": 2.039625,
+      "cpu_ms": 2.039834
+    },
+    {
+      "table": 438,
+      "bot": "hero",
+      "hand": 110,
+      "street": "preflop",
+      "wall_ms": 11.934709,
+      "cpu_ms": 11.935583
+    },
+    {
+      "table": 524,
+      "bot": "tight-passive",
+      "hand": 98,
+      "street": "flop",
+      "wall_ms": 2.033209,
+      "cpu_ms": 2.0335
+    },
+    {
+      "table": 688,
+      "bot": "tight-passive",
+      "hand": 108,
+      "street": "flop",
+      "wall_ms": 4.285917,
+      "cpu_ms": 4.28625
+    },
+    {
+      "table": 761,
+      "bot": "hero",
+      "hand": 147,
+      "street": "preflop",
+      "wall_ms": 1.101875,
+      "cpu_ms": 1.102084
+    },
+    {
+      "table": 899,
+      "bot": "tight-passive",
+      "hand": 120,
+      "street": "flop",
+      "wall_ms": 2.321167,
+      "cpu_ms": 2.316667
+    }
+  ],
+  "p99_decision_ms": 0.022958,
+  "hero_p99_decision_ms": 0.103875,
+  "max_decision_ms": 11.934709,
+  "decisions": 1545889
+}

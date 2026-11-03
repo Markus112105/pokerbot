@@ -1,0 +1,128 @@
+{
+  "tables": 1000,
+  "seed": 1,
+  "lineup": [
+    "naive-pushfold",
+    "naive-pushfold",
+    "naive-pushfold",
+    "naive-pushfold",
+    "naive-pushfold",
+    "naive-pushfold",
+    "naive-pushfold"
+  ],
+  "payouts": [
+    10,
+    7,
+    5,
+    3,
+    2,
+    1,
+    0,
+    0
+  ],
+  "average_points": {
+    "naive-pushfold": 3.198083,
+    "hero": 5.613417
+  },
+  "hero_standard_error": 0.134119,
+  "finishing_position_histogram": {
+    "1": 405.0,
+    "2": 134.0,
+    "3": 73.0,
+    "4": 41.0,
+    "5": 42.25,
+    "6": 52.916667,
+    "7": 78.916667,
+    "8": 172.916667
+  },
+  "histogram_note": "Tied finishes split counts; cap survivors use ICM rank probabilities.",
+  "errors": 0,
+  "timeouts": 18,
+  "capped_tables": 0,
+  "timeout_details": [
+    {
+      "table": 8,
+      "bot": "naive-pushfold",
+      "hand": 48,
+      "street": "flop",
+      "wall_ms": 5.245917,
+      "cpu_ms": 5.246208
+    },
+    {
+      "table": 92,
+      "bot": "hero",
+      "hand": 20,
+      "street": "flop",
+      "wall_ms": 1.006291,
+      "cpu_ms": 0.093334
+    },
+    {
+      "table": 93,
+      "bot": "naive-pushfold",
+      "hand": 72,
+      "street": "river",
+      "wall_ms": 4.785583,
+      "cpu_ms": 0.077084
+    },
+    {
+      "table": 94,
+      "bot": "naive-pushfold",
+      "hand": 77,
+      "street": "turn",
+      "wall_ms": 13.428916,
+      "cpu_ms": 0.057708
+    },
+    {
+      "table": 95,
+      "bot": "naive-pushfold",
+      "hand": 10,
+      "street": "turn",
+      "wall_ms": 1.142625,
+      "cpu_ms": 0.047792
+    },
+    {
+      "table": 95,
+      "bot": "naive-pushfold",
+      "hand": 10,
+      "street": "river",
+      "wall_ms": 1.61175,
+      "cpu_ms": 0.026417
+    },
+    {
+      "table": 95,
+      "bot": "naive-pushfold",
+      "hand": 11,
+      "street": "preflop",
+      "wall_ms": 1.313167,
+      "cpu_ms": 0.02125
+    },
+    {
+      "table": 95,
+      "bot": "naive-pushfold",
+      "hand": 31,
+      "street": "river",
+      "wall_ms": 4.036875,
+      "cpu_ms": 0.032584
+    },
+    {
+      "table": 95,
+      "bot": "naive-pushfold",
+      "hand": 34,
+      "street": "flop",
+      "wall_ms": 2.640959,
+      "cpu_ms": 0.076208
+    },
+    {
+      "table": 95,
+      "bot": "naive-pushfold",
+      "hand": 49,
+      "street": "flop",
+      "wall_ms": 9.057459,
+      "cpu_ms": 0.053125
+    }
+  ],
+  "p99_decision_ms": 0.038125,
+  "hero_p99_decision_ms": 0.096833,
+  "max_decision_ms": 13.428916,
+  "decisions": 1141921
+}

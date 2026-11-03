@@ -1,0 +1,47 @@
+{
+  "tables": 1000,
+  "seed": 1,
+  "lineup": [
+    "random",
+    "random",
+    "random",
+    "random",
+    "random",
+    "random",
+    "random"
+  ],
+  "payouts": [
+    10,
+    7,
+    5,
+    3,
+    2,
+    1,
+    0,
+    0
+  ],
+  "average_points": {
+    "random": 2.94261,
+    "hero": 7.401733
+  },
+  "hero_standard_error": 0.068904,
+  "finishing_position_histogram": {
+    "1": 321.0,
+    "2": 485.0,
+    "3": 132.166667,
+    "4": 33.566667,
+    "5": 15.066667,
+    "6": 5.066667,
+    "7": 4.566667,
+    "8": 3.566667
+  },
+  "histogram_note": "Tied finishes split counts; cap survivors use ICM rank probabilities.",
+  "errors": 0,
+  "timeouts": 0,
+  "capped_tables": 0,
+  "timeout_details": [],
+  "p99_decision_ms": 0.025417,
+  "hero_p99_decision_ms": 0.032708,
+  "max_decision_ms": 0.817458,
+  "decisions": 431059
+}

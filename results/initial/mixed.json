@@ -1,0 +1,61 @@
+{
+  "tables": 1000,
+  "seed": 1,
+  "lineup": [
+    "random",
+    "always-call",
+    "always-raise",
+    "tight-passive",
+    "loose-aggressive",
+    "naive-pushfold",
+    "random"
+  ],
+  "payouts": [
+    10,
+    7,
+    5,
+    3,
+    2,
+    1,
+    0,
+    0
+  ],
+  "average_points": {
+    "always-raise": 1.7339,
+    "naive-pushfold": 4.26175,
+    "random": 2.4086,
+    "loose-aggressive": 2.902917,
+    "hero": 6.8829,
+    "tight-passive": 5.83225,
+    "always-call": 1.569083
+  },
+  "hero_standard_error": 0.088254,
+  "finishing_position_histogram": {
+    "1": 377.0,
+    "2": 202.0,
+    "3": 256.333333,
+    "4": 113.066667,
+    "5": 35.066667,
+    "6": 7.9,
+    "7": 4.566667,
+    "8": 4.066667
+  },
+  "histogram_note": "Tied finishes split counts; cap survivors use ICM rank probabilities.",
+  "errors": 0,
+  "timeouts": 1,
+  "capped_tables": 0,
+  "timeout_details": [
+    {
+      "table": 762,
+      "bot": "naive-pushfold",
+      "hand": 11,
+      "street": "flop",
+      "wall_ms": 7.360166,
+      "cpu_ms": 7.360625
+    }
+  ],
+  "p99_decision_ms": 0.026584,
+  "hero_p99_decision_ms": 0.035708,
+  "max_decision_ms": 7.360166,
+  "decisions": 563628
+}

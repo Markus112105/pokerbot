@@ -1,0 +1,53 @@
+{
+  "tables": 1000,
+  "seed": 1,
+  "lineup": [
+    "always-call",
+    "always-call",
+    "always-call",
+    "always-call",
+    "always-call",
+    "always-call",
+    "always-call"
+  ],
+  "payouts": [
+    10.0,
+    7.0,
+    5.0,
+    3.0,
+    2.0,
+    1.0,
+    0.0,
+    0.0
+  ],
+  "average_points": {
+    "always-call": 2.899366,
+    "hero": 7.704438
+  },
+  "hero_standard_error": 0.119989,
+  "finishing_position_histogram": {
+    "1": 712.0,
+    "2": 19.142857,
+    "3": 41.97619,
+    "4": 43.17619,
+    "5": 34.67619,
+    "6": 41.67619,
+    "7": 65.17619,
+    "8": 42.17619
+  },
+  "histogram_note": "Tied finishes split counts; cap survivors use ICM rank probabilities.",
+  "errors": 0,
+  "timeouts": 0,
+  "stalls": 0,
+  "capped_tables": 10,
+  "hero_errors": 0,
+  "hero_timeouts": 0,
+  "timeouts_by_name": {},
+  "errors_by_name": {},
+  "timeout_details": [],
+  "stall_details": [],
+  "p99_decision_ms": 0.021833,
+  "hero_p99_decision_ms": 0.09775,
+  "max_decision_ms": 0.179458,
+  "decisions": 1425971
+}

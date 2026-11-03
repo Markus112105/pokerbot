@@ -1,0 +1,56 @@
+{
+  "tables": 1000,
+  "seed": 1,
+  "lineup": [
+    "always-raise",
+    "always-raise",
+    "always-raise",
+    "always-raise",
+    "always-raise",
+    "always-raise",
+    "always-raise"
+  ],
+  "payouts": [
+    10,
+    7,
+    5,
+    3,
+    2,
+    1,
+    0,
+    0
+  ],
+  "average_points": {
+    "always-raise": 2.968656,
+    "hero": 7.219405
+  },
+  "hero_standard_error": 0.033866,
+  "finishing_position_histogram": {
+    "1": 97.0,
+    "2": 889.142857,
+    "3": 2.309524,
+    "4": 2.309524,
+    "5": 2.309524,
+    "6": 2.309524,
+    "7": 2.309524,
+    "8": 2.309524
+  },
+  "histogram_note": "Tied finishes split counts; cap survivors use ICM rank probabilities.",
+  "errors": 0,
+  "timeouts": 1,
+  "capped_tables": 0,
+  "timeout_details": [
+    {
+      "table": 976,
+      "bot": "hero",
+      "hand": 130,
+      "street": "flop",
+      "wall_ms": 9.449167,
+      "cpu_ms": 9.449875
+    }
+  ],
+  "p99_decision_ms": 0.025833,
+  "hero_p99_decision_ms": 0.028,
+  "max_decision_ms": 9.449167,
+  "decisions": 135829
+}

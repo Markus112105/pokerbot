@@ -1,0 +1,53 @@
+{
+  "tables": 1000,
+  "seed": 1,
+  "lineup": [
+    "naive-pushfold",
+    "naive-pushfold",
+    "naive-pushfold",
+    "naive-pushfold",
+    "naive-pushfold",
+    "naive-pushfold",
+    "naive-pushfold"
+  ],
+  "payouts": [
+    10.0,
+    7.0,
+    5.0,
+    3.0,
+    2.0,
+    1.0,
+    0.0,
+    0.0
+  ],
+  "average_points": {
+    "naive-pushfold": 3.182833,
+    "hero": 5.720167
+  },
+  "hero_standard_error": 0.13442,
+  "finishing_position_histogram": {
+    "1": 419.0,
+    "2": 134.0,
+    "3": 72.0,
+    "4": 35.0,
+    "5": 32.5,
+    "6": 62.166667,
+    "7": 75.166667,
+    "8": 170.166667
+  },
+  "histogram_note": "Tied finishes split counts; cap survivors use ICM rank probabilities.",
+  "errors": 0,
+  "timeouts": 0,
+  "stalls": 0,
+  "capped_tables": 0,
+  "hero_errors": 0,
+  "hero_timeouts": 0,
+  "timeouts_by_name": {},
+  "errors_by_name": {},
+  "timeout_details": [],
+  "stall_details": [],
+  "p99_decision_ms": 0.0215,
+  "hero_p99_decision_ms": 0.083333,
+  "max_decision_ms": 0.170584,
+  "decisions": 1141802
+}

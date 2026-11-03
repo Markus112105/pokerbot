@@ -1,0 +1,53 @@
+{
+  "tables": 1000,
+  "seed": 1,
+  "lineup": [
+    "loose-aggressive",
+    "loose-aggressive",
+    "loose-aggressive",
+    "loose-aggressive",
+    "loose-aggressive",
+    "loose-aggressive",
+    "loose-aggressive"
+  ],
+  "payouts": [
+    10.0,
+    7.0,
+    5.0,
+    3.0,
+    2.0,
+    1.0,
+    0.0,
+    0.0
+  ],
+  "average_points": {
+    "loose-aggressive": 2.943384,
+    "hero": 7.396314
+  },
+  "hero_standard_error": 0.051862,
+  "finishing_position_histogram": {
+    "1": 212.0,
+    "2": 712.761905,
+    "3": 46.428571,
+    "4": 14.028571,
+    "5": 4.695238,
+    "6": 3.361905,
+    "7": 3.361905,
+    "8": 3.361905
+  },
+  "histogram_note": "Tied finishes split counts; cap survivors use ICM rank probabilities.",
+  "errors": 0,
+  "timeouts": 0,
+  "stalls": 0,
+  "capped_tables": 0,
+  "hero_errors": 0,
+  "hero_timeouts": 0,
+  "timeouts_by_name": {},
+  "errors_by_name": {},
+  "timeout_details": [],
+  "stall_details": [],
+  "p99_decision_ms": 0.025167,
+  "hero_p99_decision_ms": 0.02775,
+  "max_decision_ms": 0.163042,
+  "decisions": 216776
+}
