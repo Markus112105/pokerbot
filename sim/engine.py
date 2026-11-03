@@ -60,6 +60,7 @@ class Result:
     stall_details: list
     timeouts_by_name: dict
     errors_by_name: dict
+    bust_hands: list
 
 
 class Engine:
@@ -86,6 +87,7 @@ class Engine:
         self.errors = self.timeouts = self.stalls = 0
         self.timeout_details, self.stall_details = [], []
         self.timeouts_by_name, self.errors_by_name = {}, {}
+        self.bust_hands = [None] * self.n
         self.timings, self.timing_seats = [], []
         self.button = self.rng.randrange(self.n)
         for bot in self.bots:
@@ -247,6 +249,8 @@ class Engine:
                 self.stacks = [a+b for a, b in zip(self.stacks, awards)]
             assert sum(self.stacks) == self.total_chips and min(self.stacks) >= 0
             busted = [i for i in alive if self.stacks[i] == 0]
+            for i in busted:
+                self.bust_hands[i] = hand
             place = len(alive)
             for chips in sorted({before[i] for i in busted}):
                 group = [i for i in busted if before[i] == chips]
@@ -271,4 +275,4 @@ class Engine:
                       self.stacks, hand, self.errors, self.timeouts, self.timings,
                       self.timing_seats, len(survivors) > 1, self.timeout_details,
                       self.stalls, self.stall_details, self.timeouts_by_name,
-                      self.errors_by_name)
+                      self.errors_by_name, self.bust_hands)

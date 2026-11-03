@@ -21,6 +21,7 @@ class RunTests(unittest.TestCase):
         self.assertEqual(report["hero_errors"], 0)
         self.assertIn("hero_timeouts", report)
         self.assertIn("stalls", report)
+        self.assertEqual(sum(report["hero_bust_by_blind_level"].values()), 2)
         self.assertAlmostEqual(sum(report["finishing_position_histogram"].values()), 2, places=5)
         averages = report["average_points"]
         self.assertAlmostEqual(averages["hero"]+7*averages["always-call"], 28, places=5)

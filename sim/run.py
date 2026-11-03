@@ -28,6 +28,7 @@ def run(tables=1000, lineup="mixed", payouts=DEFAULT_PAYOUTS, seed=1):
     sums, counts = defaultdict(float), defaultdict(int)
     timeouts_by_name, errors_by_name = defaultdict(int), defaultdict(int)
     histogram = [0.0] * 8
+    bust_buckets, survived = [0] * 8, 0
     errors = timeouts = stalls = capped = 0
     # Packed integers avoid making cyclic GC traverse hundreds of thousands
     # of historical timing objects during an unrelated bot decision.
@@ -43,6 +44,11 @@ def run(tables=1000, lineup="mixed", payouts=DEFAULT_PAYOUTS, seed=1):
             result = Engine(bots, seed=seed+table, payouts=payouts).play()
             hero = result.names.index("hero")
             hero_scores.append(result.points[hero])
+            bust = result.bust_hands[hero]
+            if bust is None:
+                survived += 1
+            else:
+                bust_buckets[min((bust - 1) // 25, 7)] += 1
             for name, points in zip(result.names, result.points):
                 sums[name] += points
                 counts[name] += 1
@@ -72,6 +78,8 @@ def run(tables=1000, lineup="mixed", payouts=DEFAULT_PAYOUTS, seed=1):
                 hero_standard_error=round(stderr, 6),
                 finishing_position_histogram={str(i+1): round(v, 6) for i, v in enumerate(histogram)},
                 histogram_note="Tied finishes split counts; cap survivors use ICM rank probabilities.",
+                hero_bust_by_blind_level={**{f"{25*i+1}-{25*(i+1)}": bust_buckets[i] for i in range(8)},
+                                          "survived_or_won": survived},
                 errors=errors, timeouts=timeouts, stalls=stalls, capped_tables=capped,
                 hero_errors=errors_by_name.get("hero", 0),
                 hero_timeouts=timeouts_by_name.get("hero", 0),
