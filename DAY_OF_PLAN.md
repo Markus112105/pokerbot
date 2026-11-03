@@ -163,7 +163,10 @@ floor: `git add -A && git commit -m "T1 floor" && git tag day-t1 && git push --t
 python -m unittest discover -s tests                 # 30 s sanity
 python -m tables.gen_equity --workers 6              # standard regen, ~10 s
 python -m tables.gen_equity --variant tables.variant --samples 10000 --workers 6 --output tables/equity_variant.json
-python -m tables.pushfold                            # rebuild push/fold JSON
+python -m tables.pushfold                            # rebuild push/fold JSON (holdem)
+python -m tables.pushfold --equity tables/equity_variant.json   # REQUIRED after a variant regen:
+                                                     # a stale holdem table KeyErrors on new hand
+                                                     # classes and the bot check-folds all short play
 python -m sim.run --tables 200                       # our sim (kit sim is authoritative)
 python -m benchmarks.policy --load                   # timing under load
 git checkout known-good-v2 -- bot tables             # restore pre-event verified state

@@ -107,7 +107,13 @@ def decide(s):
     station, folder, maniac = vpip > .45 and fold_rate < .4, fold_rate > .7, pfr > .35
     raised = s['current_bet'] > s['bb'] if preflop else to_call > 0
     hand = strength.hand_class(s['hole'])
-    premium = hand in ('AA', 'KK', 'QQ', 'AKs', 'AKo')
+    # Named classes keep the validated two-card behavior exactly (a pure
+    # percentile band widened deep stack-offs to JJ/TT/99/AQs and lost 0.17
+    # avg points in paired runs). The percentile branch exists only for
+    # variant hand classes the names cannot match, e.g. 3+ hole cards.
+    absolute = strength.percentile(s['hole'], 1)
+    variant_class = len(hand) > 3
+    premium = hand in ('AA', 'KK', 'QQ', 'AKs', 'AKo') or (variant_class and absolute <= .03)
     action = passive
     win_probability = max(.05, eq - (.06 if raised and not maniac else .02))
     if preflop and tracker:
@@ -151,7 +157,8 @@ def decide(s):
             if percentile <= cutoff:
                 multiple = 2 if folder else 2.5 if phase == 'deep' else 2.2
                 action = {'type': 'raise', 'amount': int(multiple * s['bb'])}
-        elif premium or (phase == 'middle' and hand in ('AQs', 'AQo', 'AJs', 'JJ', 'TT')):
+        elif premium or (phase == 'middle' and (hand in ('AQs', 'AQo', 'AJs', 'JJ', 'TT')
+                                                or (variant_class and absolute <= .06))):
             if maniac and phase == 'deep' and to_call < stack * .25:
                 action = {'type': 'call'}
             else:
