@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install (no mandatory dependencies)
+        run: pip install -r requirements.txt
+      - name: Unit tests (pure-Python backend)
+        run: python -m unittest discover -s tests -v
+      - name: Install eval7 and re-run (accelerated backend + agreement tests)
+        run: |
+          pip install eval7
+          python -m unittest discover -s tests -v
+      - name: Simulation smoke (25 tables, deterministic)
+        run: python -m sim.run --tables 25 --seed 7
+
+  benchmarks:
+    # Timing assertions are informational on shared CI runners: a noisy
+    # neighbor can blow a wall-clock percentile that passes on real hardware.
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install eval7
+      - name: Postflop evaluator benchmark (p99 < 0.3 ms)
+        run: python -m benchmarks.strength
+      - name: ICM and decision-path benchmark (p99 < 0.1 / 0.5 ms)
+        run: python -m benchmarks.policy
