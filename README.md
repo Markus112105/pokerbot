@@ -2,25 +2,26 @@
 
 [![CI](https://github.com/Markus112105/pokerbot/actions/workflows/ci.yml/badge.svg)](https://github.com/Markus112105/pokerbot/actions/workflows/ci.yml)
 
+A tournament poker bot that decides in microseconds, a game-theory solver that
+measures exactly how far it strays from optimal, and an animated table to
+watch it play. Python 3.11, standard library only, fully offline.
+
 ## The strategy in plain words
 
-Most teams will try to build a bot that plays brilliant poker. Ours is built
-to simply never die. The competition scores you on where you finish at each
-table, not how many chips you win, and the field will be full of student bots
-that play way too many hands and knock each other out. So our bot folds almost
-everything early and lets the fireworks happen around it, then switches gears
-as the blinds get big: it follows a pre-calculated "shove or fold" chart for
-short stacks (math that's basically solved), and before any big risk it asks
-"is this gamble actually worth it given the prize structure?" instead of just
-chasing chips. Along the way it takes cheap notes on each opponent: steal
-from the ones who always fold, never bluff the ones who always call. The real
-difference, though, is engineering: every bot gets just one millisecond to
-act, and any crash or delay means an automatic fold. So instead of doing
-fancy calculations live, we did all the heavy math at home and the bot just
-looks up answers, instantly, every single time. It will work because
-tight-and-reliable beats clever-and-crashing in a survival game: we don't have
-to outplay anyone, we just have to still be standing while everyone else's
-bots knock each other out or break.
+Most bots try to play brilliant poker. This one is built to simply never die.
+Tournament poker scores you on where you finish at each table, not how many
+chips you win, and weak fields play way too many hands and knock each other
+out. So the bot folds almost everything early and lets the fireworks happen
+around it, then switches gears as the blinds climb: it follows a
+pre-calculated "shove or fold" chart for short stacks (math that's basically
+solved), and before any big risk it asks "does this gamble improve my
+expected finishing position?" instead of counting chips. Along the way it
+takes cheap notes on each opponent: steal from the ones who always fold,
+never bluff the ones who always call. The real difference is engineering:
+under a one-millisecond decision limit where any crash or delay means an
+automatic fold, all the heavy math happens ahead of time and the bot just
+looks up answers, instantly, every single time. Tight-and-reliable beats
+clever-and-crashing in a survival game.
 
 The bot changes personality as the game ages. The mode is picked by how big
 your stack is compared to the blinds, which the rising blinds shrink for
@@ -28,33 +29,31 @@ everyone:
 
 - **Early game** (everyone deep, blinds tiny): extremely tight. Play only
   strong hands, bet them for value, never bluff, and never call a huge bet
-  without a monster. Folding costs almost nothing here, and the reckless bots
-  are busy eliminating each other. The goal is to not be at the crash site.
+  without a monster. Folding costs almost nothing here, and reckless
+  opponents are busy eliminating each other. The goal is to not be at the
+  crash site.
 - **Mid game** (blinds climbing, stacks worth 15-30 big blinds): raise or
   fold, almost never just call. Open fewer but stronger hands, start stealing
   blinds from opponents the tracker has seen folding too often, and ditch
   marginal hands before they become expensive.
 - **Late game** (short stacks, huge blinds): all-in or fold, straight from a
-  precomputed chart, because short-stack poker is close to mathematically solved, and
-  badly built bots that limp or blind away get punished mechanically here.
-  Every big risk is priced in tournament points, not chips ("does this gamble
-  improve my expected finishing position?"), and near the hand cap the bot
-  even checks whether folding every remaining hand locks in a better payout
-  than playing on.
+  precomputed chart, because short-stack poker is close to mathematically
+  solved and bots that limp or blind away get punished mechanically here.
+  Every big risk is priced in tournament points via ICM, and near the hand
+  cap the bot even checks whether folding every remaining hand locks in a
+  better payout than playing on.
 
 This is deliberately **not** another GTO solver; plenty of those exist. A
 game-theory-optimal bot plays "unbeatable" poker against perfect opponents;
-this bot instead plays survival-first, exploitative poker against the flawed
-opponents that actually show up, folding more than theory says early and
-punishing the field's specific leaks (over-folding, over-calling, blinding
-away) harder than theory says. The repo does include a solver (`solver/`), but
-its job is measurement, not play: it computes exactly how far the bot strays
-from equilibrium (about 0.09 bb/hand in the push/fold game), so the cost of
-playing exploitatively is a known, chosen number instead of a guess.
+this bot plays survival-first, exploitative poker against the flawed
+opponents that actually show up. The repo does include a solver (`solver/`),
+but its job is measurement, not play: it computes exactly how far the bot
+strays from equilibrium (about 0.09 bb/hand in the push/fold game), so the
+cost of playing exploitatively is a known, chosen number instead of a guess.
 
-Python 3.11 preparation repo for the rules in `no-limit-pokerbot-playbook.md`.
-The competition kit remains authoritative for the actual variant and interface.
-All bot, generator, benchmark, and simulator execution is offline.
+The project began as preparation for a timed pokerbot competition; the
+original strategy document (`no-limit-pokerbot-playbook.md`) and build plan
+(`DAY_OF_PLAN.md`) are kept as history.
 
 ## How to run
 
@@ -63,7 +62,7 @@ Setup (installs nothing by design; the standard library is the tested path):
 ```sh
 python3.11 -m venv .venv
 source .venv/bin/activate
-pip install --no-index -r requirements.txt
+pip install -r requirements.txt
 ```
 
 Then, from the repo root:
@@ -72,75 +71,76 @@ Then, from the repo root:
 | --- | --- |
 | `python -m sim.watch` | record a fresh table and open the animated viewer |
 | `python -m sim.run --tables 1000` | full simulation report: points, histogram, bust timing, p99 |
+| `python -m sim.run --tables 1000 --lineup tight-passive` | hero vs seven copies of one baseline |
 | `python -m unittest discover -s tests` | the whole test suite, ~2 s |
 | `python -m benchmarks.strength` / `benchmarks.policy` | timing assertions on the hot paths |
 | `python -m solver.run --game leduc --iterations 5000` | watch CFR+ converge to Nash |
 | `python -m solver.pushfold_exploit` | exploitability of the push/fold tables |
-| `python -m sim.record --tables 2` | write replay JSON without serving |
 | `python -m mit.benchmark --games 3` | play the MIT Pokerbots 2026 reference bots (setup below) |
 
-`pip install -r requirements.txt` also works. The requirements file intentionally
-has no mandatory packages: the standard-library evaluator is a fully tested
-primary path, so the repo runs with no downloads at all. eval7 (verified at
-0.1.11) is selected automatically when importable. On an offline machine,
-enable it from a locally supplied wheel: `pip install --no-index --find-links
-/path/to/wheels eval7`; with network, `uv pip install eval7 --python
-.venv/bin/python` (a bare `pip` may belong to a different Python). Backend
-equivalence is established directly, not by comparing tournament scores:
-`tests/test_backends.py` asserts category and pairwise-ordering agreement, and
-regenerating the equity table under eval7 with the same seed reproduced the
-committed python-backend JSON byte for byte (~13.5M sampled showdowns). If
-eval7 is missing on the day, nothing needs to change.
+eval7 is optional acceleration, auto-selected when importable
+(`uv pip install eval7 --python .venv/bin/python`); the pure-Python evaluator
+is proven equivalent by `tests/test_backends.py` and by a same-seed equity
+regeneration that reproduced the committed table byte for byte. Baseline
+names for `--lineup`: `random`, `always-call`, `always-raise`,
+`tight-passive`, `loose-aggressive`, `naive-pushfold`, or seven
+comma-separated names; the default `mixed` seats all six plus a second random.
 
-Run one hero against seven copies of a baseline:
+## Results
 
-```sh
-python -m sim.run --tables 1000 --lineup tight-passive
-python -m sim.run --tables 1000 --lineup loose-aggressive --seed 42
-python -m sim.run --tables 1000 --payouts 10,7,5,3,2,1,0,0
-```
+Eight-seat sit-and-gos, 2,000 chips, blinds doubling every 25 hands, 200-hand
+cap with ICM split, payouts 10/7/5/3/2/1/0/0. Over 1,000 tables per lineup
+the bot beats every baseline with **zero errors and zero timeouts** across
+roughly four million decisions (p99 decision time 0.13 ms on the slowest
+path against the 1 ms budget):
 
-Other baseline names are `random`, `always-call`, `always-raise`, and
-`naive-pushfold`. A comma-separated list of seven names specifies a mixed table.
-Default `mixed` includes all six baselines and a second random player. Reported
-baseline averages are per seat/table, so the duplicated random bot is normalized
-correctly. Tied finishes share histogram counts. At the cap, fractional counts
-are ICM finish probabilities, not invented realized finish positions.
+| Lineup (hero + 7x) | Hero avg points | Baseline avg points |
+| --- | --- | --- |
+| mixed (all six) | **6.97** | best rival 5.79 |
+| always-call | **7.70** | 2.90 |
+| random | **7.40** | 2.94 |
+| loose-aggressive | **7.40** | 2.94 |
+| always-raise | **7.23** | 2.97 |
+| naive-pushfold | **5.72** | 3.18 |
+| tight-passive | **3.73** | 3.47 |
 
-## Solver and measured results
+Full reports with histograms, bust timing by blind level, and standard errors
+are in `results/`. Beating self-written baselines is the weakest kind of
+evidence, which is why the next two sections exist.
 
-`solver/` holds an exact CFR+ implementation (alternating updates, regret
-matching+, linear averaging) with best-response exploitability, verified
-against Kuhn poker's closed-form Nash value and run on the standard research
-benchmarks (all exploitabilities in chips or bb per hand; zero is Nash):
+## Solver: distance from Nash, measured
+
+`solver/` is an exact CFR+ implementation (alternating updates, regret
+matching+, linear averaging) with best-response exploitability, validated
+against Kuhn poker's closed-form Nash value and the standard research
+benchmarks (exploitability is in chips or bb per hand; zero means
+unexploitable):
 
 | Measurement | Result |
 | --- | --- |
-| Kuhn value after 200k iterations (exact: -1/18 = -0.05556) | -0.05558 |
+| Kuhn value, 200k iterations (exact: -1/18 = -0.05556) | -0.05558 |
 | Kuhn exploitability | 0.00034 |
-| Leduc hold'em value after 25k iterations (published ~ -0.0856) | -0.08580 |
+| Leduc hold'em value, 25k iterations (published ~ -0.0856) | -0.08580 |
 | Leduc exploitability | 0.0083 |
-| Push/fold tables, mean exploitability over depths 2-15 bb | 0.088 bb/hand |
+| This repo's push/fold tables, mean over depths 2-15 bb | 0.088 bb/hand |
 
-The push/fold measurement (`python -m solver.pushfold_exploit`, needing the
-card-removal-aware equity matrix from `python -m solver.matchups`) solves the
-heads-up jam/fold game to Nash at every depth (solver residual 0.000) and
-best-responds against this repo's tables. Finding: the shove ranges are
-near-unexploitable (a perfect caller gains nothing at most depths), while the
-deliberately tightened calling ranges leak ~0.2 bb/hand to a perfect shover:
-the measured price of the anti-field tightening, worth it only against fields
-that shove less than Nash. This bot is intentionally exploitative, not GTO;
-the solver exists to price that deviation, not to replace it.
+`python -m solver.pushfold_exploit` (after `python -m solver.matchups` builds
+the card-removal-aware 169x169 equity matrix) solves the heads-up jam/fold
+game to Nash at every depth (solver residual 0.000) and best-responds against
+this repo's tables. Finding: the shove ranges are near-unexploitable, while
+the deliberately tightened calling ranges leak ~0.2 bb/hand to a perfect
+shover. That is the measured price of anti-field tightening, worth paying
+only against fields that shove less than Nash.
 
 ## External benchmark: MIT Pokerbots 2026
 
-`mit/player.py` adapts the strategy core to the MIT Pokerbots 2026 engine,
-a real variant adaptation: heads-up bankroll play (so the ICM layer stays
-home; chip EV is the right frame), three hole cards, a two-card flop, each
-player discards one card face-up onto the shared board, six board cards by
-the river, 1,000 rounds at 1/2 blinds with 400-chip stacks and alternating
-seats. The adapter reuses the equity table (best two-card projection of the
-three-card hand), the evaluator, and a board-synergy discard rule.
+`mit/player.py` adapts the strategy core to the MIT Pokerbots 2026 engine and
+its variant: heads-up bankroll play (chip EV, so the ICM layer stays home),
+three hole cards, a two-card flop, each player discards one card face-up onto
+the shared board, six board cards by the river, 1,000 rounds at 1/2 blinds
+with 400-chip stacks. The adapter reuses the equity table (best two-card
+projection of the three-card hand), the evaluator, and a board-synergy
+discard rule.
 
 Results from `python -m mit.benchmark --games 3` (3 x 1,000 rounds each):
 
@@ -153,11 +153,11 @@ Results from `python -m mit.benchmark --games 3` (3 x 1,000 rounds each):
 
 MIT's reference READMEs report those bots beat the skeleton in 80-100% of
 their games; this adapter beats the references themselves in every match,
-with the worst single game at +7.2 bb/hand. These are course reference bots,
-not competition winners, so the claim is "clears the published baseline set
-by a wide margin," not "world class". But the numbers are reproducible by
-anyone against the same public opponents, which is what makes them a
-benchmark. Full per-game data in `results/mit_benchmark.json`.
+worst single game +7.2 bb/hand. These are course reference bots, not
+competition winners, so the claim is "clears the published baseline set by a
+wide margin," not "world class". But the numbers are reproducible by anyone
+against the same public opponents. Per-game data in
+`results/mit_benchmark.json`.
 
 Setup (their license is unspecified, so their code stays out of this repo in
 the gitignored `vendor/`):
@@ -174,189 +174,62 @@ python -m mit.benchmark --games 3
 
 ## Watch it play
 
-```sh
-python -m sim.watch
-```
+`python -m sim.watch` records a fresh table (random seed, printed for
+reproducibility), starts a local server, and opens the animated table in the
+browser: seats, hole cards, board, pot, per-action log, standings, playback
+from 0.25x to 256x, and a cards toggle (all face up for analysis, or
+hero-only with showdown reveals). Face-up cards are for the viewer only; bots
+never see each other's hands, since engine states carry only the acting bot's
+own cards. `python -m sim.record` writes replay JSON without serving; the
+page's file picker loads any recording.
 
-records a fresh table (random seed, printed for reproducibility), starts a
-local server, and opens the animated table in the browser: seats, hole cards,
-board, pot, per-action log, standings, playback from 0.25x to 256x, and a
-cards toggle (all face up for analysis, or hero-only with showdown reveals).
-Face-up cards are for the viewer only; bots never see each other's hands,
-since engine states carry only the acting bot's own cards. `python -m sim.record`
-writes replay JSON without serving; the page's file picker loads any of them.
+## Architecture
 
-## Files and contracts
-
-| File | Responsibility |
+| Path | Responsibility |
 | --- | --- |
-| `bot/agent.py` | Normalize kit state, safety wrapper, legal clamp, encode action |
-| `solver/` | CFR+, Kuhn/Leduc games, best response, jam/fold exploitability |
-| `sim/record.py`, `viewer/table.html` | Replay recording and the animated table |
-| `bot/tables.py` | Import-time data loading and variant seam |
-| `bot/strength.py` | Preflop equity/percentiles and postflop features |
-| `bot/icm.py` | Exact ICM; full field and fast single-seat queries |
-| `bot/tracker.py` | Per-table Bayesian statistics and fold-size buckets |
-| `bot/strategy.py` | Phase policy, opponent adjustments, large-risk ICM gate |
-| `tables/` | Generators, JSON data, optional variant modules |
-| `sim/` | Offline holdem engine, six baselines, CLI reports |
-| `tests/`, `benchmarks/` | Correctness checks and timing assertions |
+| `bot/strategy.py` | phase policy, opponent adjustments, large-risk ICM gate |
+| `bot/agent.py` | safety wrapper, legality clamp, interface adapter |
+| `bot/strength.py` | preflop equity/percentile lookups, postflop features |
+| `bot/icm.py` | exact ICM via inclusion-exclusion, memoized |
+| `bot/tracker.py` | per-seat Bayesian opponent counters |
+| `bot/tables.py` | import-time data loading, the variant seam |
+| `tables/` | equity/push-fold generators and their JSON outputs |
+| `sim/` | 8-max tournament engine, six baselines, reports, replays, watch |
+| `solver/` | CFR+, Kuhn/Leduc, best response, jam/fold exploitability |
+| `mit/` | MIT Pokerbots 2026 adapter and benchmark runner |
+| `viewer/` | the animated replay page |
+| `tests/`, `benchmarks/` | 47 tests and timing assertions |
 
-All agents implement `reset()`, `observe(event)`, and `act(state)`. Actions use
-`{'type': 'fold'|'check'|'call'|'raise'}`; raises additionally have `amount`, the
-**total street contribution**, including chips already committed that street.
-Calls automatically pay the lesser of the amount owed and the remaining stack.
-`max_raise` is an engine-provided total target, allowing pot-limit adapters to
-restrict it further. A short all-in raise is legal only when the engine permits
-raising; it does not automatically reopen betting.
+Contracts in brief: agents implement `reset()`, `observe(event)`, `act(state)`;
+raise amounts are **total street contributions**; all table loading happens at
+import, never inside a decision; the strategy RNG is seeded once at import and
+no decision consults a clock. The engine enforces the 1 ms budget on wall
+time and separates true `timeouts` (thread-CPU over 1 ms) from `stalls` (OS
+preemption with idle CPU), with GC deferred to gaps between tables so pauses
+are never billed to a timed call.
 
-`state` has hole cards, board, remaining stacks, active seats, nonfolded seats,
-street bets, total contributions, pot, acting seat, blind amounts, legal actions,
-min/max raise targets, call amount, effective stack, button, position, players
-left to act, hand number, payouts, hand cap, and blind schedule. Cards use `As`,
-`Td`, etc. The agent adds its tracker. Effective stack includes the amount needed
-to match an opponent's already-committed all-in; it is not zero against an all-in.
-Observation events contain no private opponent cards except revealed showdowns.
-
-The RNG is seeded once at strategy import. No clock is consulted by `decide`.
-The simulator's deck/seating and dummy RNGs use CLI seeds. Different wall-clock
-timeouts can still change the subsequent run. `Agent()` has no local logging;
-`Agent(local_testing=True)` warns through Python logging for calls over 0.5 ms.
-The engine independently measures and enforces a 1 ms wall-clock cutoff.
-
-## Regenerate equity and push/fold data
+## Regenerating data for a new variant
 
 ```sh
 python -m tables.gen_equity --samples 20000 --workers 6
-python -m tables.pushfold
+python -m tables.pushfold                    # rebuild push/fold from the equity file
+python -m tables.gen_equity --variant tables.shortdeck --output tables/equity_shortdeck.json
+python -m tables.pushfold --equity tables/equity_variant.json   # REQUIRED after a variant regen
 ```
 
-The saved holdem table contains all 169 classes versus 1, 2, 4, and 7 random
-opponents. Each class/field size receives 20,000 samples. Field sizes reuse the
-same sampled seven-opponent deals; each estimate is unbiased but the four
-estimates are correlated. Ties split equity. Metadata records sample count,
-seed, backend, class count, and runtime. Generation time is machine-dependent.
+A variant is a module in `tables/` exporting `DECK`, `HOLE_COUNT`, and
+`rank(hole, board)` (larger wins), optionally `classify(hole)`;
+`tables/shortdeck.py` is a worked example. Measured at 20,000 samples per
+class: standard hold'em regenerates in 6.4 s with eval7 or 25.3 s pure
+Python; a custom Python `rank` function costs ~2.4 s/class (the 81-class
+short deck took 3:16). The generator writes atomically, and a running bot
+only picks up new tables on restart since loading happens at import. The
+push/fold tables are documented approximations anchored to published Nash
+charts and tightened 10% for full-ring play, not a solved multiway
+equilibrium; the solver section above quantifies what that costs heads-up.
 
-For a variant, place a module in `tables/` exporting `DECK`, `HOLE_COUNT`, and
-`rank(hole, board)` (larger ranks win). Optionally export `classify(hole)` for
-starting classes. Functions must be top-level and importable by worker processes.
-
-```sh
-python -m tables.gen_equity --variant tables.shortdeck --samples 20000 \
-  --workers 6 --output tables/equity_shortdeck.json
-```
-
-The supplied short-deck example uses ranks 6-A, flush above full house, and the
-A-6-7-8-9 straight. A custom rank callback can enforce Omaha's exactly-two-hole,
-exactly-three-board rule by maximizing over those combinations. The generator
-accepts other hole counts, but still deals five board cards and eight players;
-it rejects decks too small to do so. Suit-isomorphic classes are safe only for
-suit-symmetric rules; supply a custom classifier otherwise. More hole cards can
-create many more classes, so the five-minute budget is not guaranteed for every
-variant. Measured on this laptop at 20,000 samples: standard hold'em is 6.4 s
-with eval7 (0.04 s/class) and 25.3 s with the built-in ranker (0.15 s/class),
-while a variant module with a custom Python `rank` function costs about
-2.4 s/class (16x the built-in ranker), so the 81-class short deck took 3:16
-and a 169-class custom variant projects to ~6:50, over the five-minute budget.
-Day-of rule: for any custom-ranking variant, generate the first table with
-`--samples 10000` (~3:25 at 169 classes), submit the T1 floor, regenerate at
-full samples in the background, and then **resubmit**: tables load once at
-import, so a running bot never picks up a regenerated file. The generator
-writes the table atomically, so a regeneration cannot corrupt a concurrent
-import. Retain the metadata.
-
-Switch the data/ranking configuration in `bot/tables.py` and regenerate push/fold
-data with the new equity file. For changed postflop rules, set `FEATURE_EXTRACTOR`
-to a variant module's callable returning the `bot.strength.Features` contract;
-normalize categories to the policy's made-hand meaning. Holdem open-range heuristics and postflop feature
-semantics require review for unusual variants, particularly wild cards, different
-community-card counts, or Omaha. Regenerating random-card equities alone does not
-make a holdem strategy correct for those games. The local simulator is standard
-holdem; use the provided kit simulator for variant validation.
-
-Push/fold JSON has explicit `(stack 2..15, players 1..7, position)` records and
-per-hand minimum/maximum valid stack bounds. These are documented approximations
-anchored to the playbook's ranges, tightened by a 0.90 multiplier, **not a solved
-multiway Nash equilibrium**. Weak hands generally become shoves below a maximum
-depth; interpreting a minimum as “shove whenever deeper” would invert the policy.
-The method and source reference are in `tables/pushfold.py`; no charts are fetched.
-
-## ICM and strategy assumptions
-
-ICM uses exact exponential-race inclusion-exclusion, checked against exhaustive
-finish-order enumeration. Zero stacks share remaining bottom places. Tournament
-payouts are descending; the calculator also accepts arbitrary nonnegative vectors
-for finish-probability queries. Caches reset between tables to avoid accumulating
-irrelevant states and long garbage-collection scans.
-
-The **decision scenario** remains an approximation: it compares chip-conserving
-fold/win/lose outcomes against one likely caller, with a fold-equity estimate for
-raises. Multiway side pots are settled exactly by the engine, but the strategy's
-ICM gate does not enumerate every possible caller subset. Postflop win probabilities
-are conservative made-hand heuristics; preflop equities are versus random cards,
-not solved opponent ranges. These limitations matter more than sub-millisecond
-arithmetic accuracy when comparing policies.
-
-At hand 170, fold-out logic projects remaining forced blinds under a fixed
-survivor set, transfers those chips to an opponent, and compares projected ICM
-with current ICM. It can fire with flat payouts; it usually will not with strictly
-graded payouts because folding blinds lowers equity. It does not assume future
-opponent eliminations. Blind doubling every 25 hands, simultaneous bust ordering
-by starting stack, and clockwise odd-chip assignment are local assumptions that
-must be confirmed with the kit. Filler status is not used to redistribute points.
-
-## Timing and failure checks
-
-```sh
-python -m benchmarks.strength
-python -m benchmarks.policy
-python -m benchmarks.policy --load
-```
-
-Strength evaluates 10,000 random postflop hands and asserts p99 below 0.3 ms.
-Policy timing asserts cold/cached eight-seat ICM p99 below 0.1 ms and full
-postflop-plus-ICM decision p99 below 0.5 ms. Maxima are printed too: an OS
-preemption can exceed a hard wall-clock limit even when CPU work is short.
-
-The engine enforces the 1 ms cutoff on wall time, replacing the overrunning
-action with check-else-fold exactly as the kit would. Accounting separates the
-two causes: a call whose **thread-CPU** time exceeded 1 ms is a `timeout`
-(the bot was slow); a call over the wall cutoff with idle CPU is a `stall`
-(the host descheduled the process mid-call). Both are reported with counts,
-per-bot-name attribution, and the first ten diagnostic records carrying wall
-and CPU times; a stall still costs the hand locally but is machine noise, not
-evidence of a slow decision path. `sim.run` defers automatic garbage
-collection to the gap between tables, so shared-process gen-2 GC pauses are
-never billed to a timed call; packed timing arrays keep telemetry off the GC
-heap. The real kit presumably isolates each bot; if allowed, calling
-`gc.disable()` at import in the submitted agent gives the same protection.
-
-Automated tests cover evaluator ranking and draws, table invariants, ICM reference
-comparisons, Bayesian counters, reset behavior, phase boundaries, legal clamps,
-exception fallback, no decision-time file opens/imports, first-hand and 2-8-seat
-states, all-ins, side pots, reopening, cap payouts, chip conservation, output
-reports, and submission size. The benchmark exercises the costly decision path.
-Active-submission confirmation and the kit's actual timing/sandbox behavior remain
-manual checks; local tests cannot establish them.
-
-## The 60-minute adaptation checklist
-
-| Minutes | Action and completion check |
-| --- | --- |
-| 0-5 | Both teammates read variant/interface. A records deck, rankings, hole cards, betting, payouts; B reads simulator and ICM APIs. |
-| 5-15 | A regenerates data with a five-minute budget. B adapts `bot/agent.py` state/actions/events and checks the `bot/tables.py` seam. |
-| 15-20 | Run 200 kit tables; require zero errors/timeouts and a plausible histogram. Submit the working T1 floor. |
-| 20-35 | Confirm blind schedule, push/fold depths and payout cliffs. Run 1,000 kit tables; submit at minute 35 if points improve. |
-| 35-50 | Validate tracker reads and sizing against the actual variant. Run 1,000 tables; submit at minute 50 only if points improve. |
-| 50-60 | Freeze features. Benchmark under load, recheck legality/errors and active submission confirmation. |
-
-A owns data/strategy and B owns adapter/simulation/submission throughout. Preserve
-the last accepted package before each change. Example local snapshot:
-
-```sh
-python -m unittest discover -s tests
-tar -czf known-good-bot.tgz bot tables requirements.txt
-```
-
-Keep the active platform submission confirmation alongside the local report.
-Do not infer tournament acceptance from a successful local run.
+Known modeling limits, in honesty: the ICM gate compares fold/win/lose
+against one likely caller rather than every caller subset; postflop win
+probabilities are conservative made-hand heuristics; preflop equities are
+versus random cards, not solved ranges. These matter more than
+sub-millisecond arithmetic when comparing policies.

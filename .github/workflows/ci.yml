@@ -24,18 +24,6 @@ jobs:
       - name: Simulation smoke (25 tables, deterministic)
         run: python -m sim.run --tables 25 --seed 7
 
-  benchmarks:
-    # Timing assertions are informational on shared CI runners: a noisy
-    # neighbor can blow a wall-clock percentile that passes on real hardware.
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - run: pip install eval7
-      - name: Postflop evaluator benchmark (p99 < 0.3 ms)
-        run: python -m benchmarks.strength
-      - name: ICM and decision-path benchmark (p99 < 0.1 / 0.5 ms)
-        run: python -m benchmarks.policy
+# Timing benchmarks run locally only (python -m benchmarks.strength/policy):
+# wall-clock percentiles are hardware claims, and shared CI runners cannot
+# promise them.
