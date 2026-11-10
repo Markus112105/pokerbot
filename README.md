@@ -20,6 +20,26 @@ tight-and-reliable beats clever-and-crashing in a survival game: we don't have
 to outplay anyone, we just have to still be standing while everyone else's
 bots knock each other out or break.
 
+The bot changes personality as the game ages — the mode is picked by how big
+your stack is compared to the blinds, which the rising blinds shrink for
+everyone:
+
+- **Early game** (everyone deep, blinds tiny): extremely tight. Play only
+  strong hands, bet them for value, never bluff, and never call a huge bet
+  without a monster. Folding costs almost nothing here, and the reckless bots
+  are busy eliminating each other — the goal is to not be at the crash site.
+- **Mid game** (blinds climbing, stacks worth 15-30 big blinds): raise or
+  fold, almost never just call. Open fewer but stronger hands, start stealing
+  blinds from opponents the tracker has seen folding too often, and ditch
+  marginal hands before they become expensive.
+- **Late game** (short stacks, huge blinds): all-in or fold, straight from a
+  precomputed chart — short-stack poker is close to mathematically solved, and
+  badly built bots that limp or blind away get punished mechanically here.
+  Every big risk is priced in tournament points, not chips ("does this gamble
+  improve my expected finishing position?"), and near the hand cap the bot
+  even checks whether folding every remaining hand locks in a better payout
+  than playing on.
+
 Python 3.11 preparation repo for the rules in `no-limit-pokerbot-playbook.md`.
 The competition kit remains authoritative for the actual variant and interface.
 All bot, generator, benchmark, and simulator execution is offline.
