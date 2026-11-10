@@ -56,6 +56,7 @@ h1{font-family:var(--display);font-size:1.25rem;margin:0;text-wrap:balance}
   display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;line-height:1}
 .card .s{font-size:.7rem}
 .card.red{color:var(--card-red)} .card.black{color:var(--card-black)}
+.card.back{background:repeating-linear-gradient(45deg,#4a6b8a,#4a6b8a 3px,#3a566f 3px,#3a566f 6px);border-color:#2d4357}
 .bet{position:absolute;font-size:.68rem;background:var(--panel2);border:1px solid var(--line);
   border-radius:999px;padding:1px 7px;transform:translate(-50%,-50%);font-variant-numeric:tabular-nums}
 .tag{font-size:.62rem;border-radius:4px;padding:1px 5px;display:inline-block;margin-top:2px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
@@ -88,7 +89,7 @@ select{font:inherit;font-size:.78rem;background:var(--panel2);color:var(--fg);bo
 </style>
 
 <h1>Pokerbot Table Replay</h1>
-<div class="sub">Recorded 8-max sit-and-go hands from the local engine — the tight, ICM-aware bot is <b style="color:var(--hero)">hero</b>. All cards face-up for the demo.</div>
+<div class="sub">Recorded 8-max sit-and-go hands from the local engine — the tight, ICM-aware bot is <b style="color:var(--hero)">hero</b>. Cards shown face-up are for you only; the bots never see each other's hands.</div>
 
 <div class="wrap">
   <div class="arena">
@@ -122,6 +123,13 @@ select{font:inherit;font-size:.78rem;background:var(--panel2);color:var(--fg);bo
         <select id="tablesel"></select>
       </div>
       <div class="row">
+        <label for="facemode">Cards</label>
+        <select id="facemode">
+          <option value="up">all face up</option>
+          <option value="hero">hero only, shown at showdown</option>
+        </select>
+      </div>
+      <div class="row">
         <label for="filein">Replay file</label>
         <input type="file" id="filein" accept=".json">
       </div>
@@ -140,14 +148,15 @@ select{font:inherit;font-size:.78rem;background:var(--panel2);color:var(--fg);bo
 const SUITS = {s:"♠", h:"♥", d:"♦", c:"♣"};
 const SPEEDS = [0.25, 0.5, 1, 2, 4, 8, 16, 64, 128, 256];
 let replays = [], table = 0, hand = 0, step = 0, steps = [], playing = false, timer = null;
-let foldedSeats = new Set(), lastTag = {};
+let foldedSeats = new Set(), lastTag = {}, revealedShowdown = new Set();
 
 const $ = id => document.getElementById(id);
 const esc = v => String(v).replace(/[&<>"']/g, c =>
   ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
-function cardEl(code){
+function cardEl(code, faceUp = true){
   const d = document.createElement("div");
+  if(!faceUp){ d.className = "card back"; return d; }
   const suit = String(code)[1], red = suit === "h" || suit === "d";
   d.className = "card " + (red ? "red" : "black");
   const rank = document.createElement("span"); rank.textContent = String(code)[0];
@@ -212,7 +221,10 @@ function render(){
     if(h.stacks[i] <= 0) seat.classList.add("out");
     const cards = document.createElement("div"); cards.className = "cards";
     const hole = h.holes[String(i)];
-    if(hole && h.stacks[i] > 0){ cards.append(cardEl(hole[0]), cardEl(hole[1])); }
+    // the bot itself never sees these either way -- engine states carry only
+    // the acting bots own cards and the viewer reads a separate observer feed
+    const faceUp = $("facemode").value === "up" || i === heroIndex || revealedShowdown.has(i);
+    if(hole && h.stacks[i] > 0){ cards.append(cardEl(hole[0], faceUp), cardEl(hole[1], faceUp)); }
     seat.append(cards);
     const nameEl = document.createElement("div"); nameEl.className = "chipname";
     nameEl.textContent = r.names[i]; seat.append(nameEl);
@@ -245,7 +257,7 @@ function render(){
 const currentHand = () => replays[table].hands[hand];
 
 function applyStep(s){
-  if(s.kind === "start"){ foldedSeats = new Set(); lastTag = {};
+  if(s.kind === "start"){ foldedSeats = new Set(); lastTag = {}; revealedShowdown = new Set();
     lastTag[currentHand().sb_seat] = {cls:"blind", text:"sb"};
     lastTag[currentHand().bb_seat] = {cls:"blind", text:"bb"}; }
   if(s.kind === "act"){
@@ -254,6 +266,7 @@ function applyStep(s){
   }
   if(s.kind === "board"){ for(const k in lastTag) if(lastTag[k].cls !== "fold") delete lastTag[k]; }
   if(s.kind === "settle"){
+    revealedShowdown = new Set(s.showdown || []);
     for(const i of s.showdown || []) if(!foldedSeats.has(i)) lastTag[i] = {cls:"check", text:"shows"};
     const prev = steps[steps.length - 2];
     if(prev && prev.stacks) s.stacks.forEach((after, i) => {
@@ -272,7 +285,7 @@ function log(html){
 function loadHand(index, clearLog){
   hand = Math.max(0, Math.min(index, replays[table].hands.length - 1));
   steps = buildSteps(currentHand(), replays[table].names);
-  step = 0; foldedSeats = new Set(); lastTag = {};
+  step = 0; foldedSeats = new Set(); lastTag = {}; revealedShowdown = new Set();
   if(clearLog) $("log").innerHTML = "";
   applyStep(steps[0]); render();
 }
@@ -327,6 +340,7 @@ $("prevhand").onclick = () => { setPlaying(false); loadHand(hand - 1); };
 $("handslider").oninput = e => { setPlaying(false); loadHand(+e.target.value, true); };
 $("tablesel").onchange = e => { table = +e.target.value; standings(false); loadHand(0, true); };
 $("speed").oninput = e => { $("speedlabel").textContent = SPEEDS[e.target.value] + "×"; };
+$("facemode").onchange = () => render();
 $("filein").onchange = e => {
   const f = e.target.files[0]; if(!f) return;
   f.text().then(t => loadReplays(JSON.parse(t)))
@@ -339,9 +353,9 @@ document.addEventListener("keydown", e => {
 });
 
 // the artifact publishes replay.json next to the page while a local checkout
-// serves it from the results folder so both paths are tried in order
+// serves a fresh sim.watch recording first and the committed demo second
 (async function boot(){
-  for(const path of ["replay.json", "../results/replays/demo.json"]){
+  for(const path of ["replay.json", "../results/replays/watch.json", "../results/replays/demo.json"]){
     try{ const res = await fetch(path); if(res.ok){ loadReplays(await res.json()); return; } }
     catch(err){}
   }

@@ -89,11 +89,17 @@ the solver exists to price that deviation, not to replace it.
 
 ## Watch it play
 
-`python -m sim.record --tables 2` writes a full replay
-(`results/replays/demo.json`); `viewer/table.html` animates it — seats, hole
-cards, board, pot, per-action log, standings, playback from 0.25x to 256x.
-Serve the repo root (`python -m http.server`) and open
-`/viewer/table.html`, or load any recorded JSON with the page's file picker.
+```sh
+python -m sim.watch
+```
+
+records a fresh table (random seed, printed for reproducibility), starts a
+local server, and opens the animated table in the browser: seats, hole cards,
+board, pot, per-action log, standings, playback from 0.25x to 256x, and a
+cards toggle (all face up for analysis, or hero-only with showdown reveals).
+Face-up cards are for the viewer only — bots never see each other's hands;
+engine states carry only the acting bot's own cards. `python -m sim.record`
+writes replay JSON without serving; the page's file picker loads any of them.
 
 ## Files and contracts
 
