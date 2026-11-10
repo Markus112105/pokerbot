@@ -4,7 +4,8 @@
 
 A tournament poker bot that decides in microseconds, a game-theory solver that
 measures exactly how far it strays from optimal, and an animated table to
-watch it play. Python 3.11, standard library only, fully offline.
+watch it play. Python 3.11, standard library only, fully offline. The math
+behind every decision is explained in depth in [docs/MATH.md](docs/MATH.md).
 
 ## The strategy in plain words
 
