@@ -24,15 +24,28 @@ Python 3.11 preparation repo for the rules in `no-limit-pokerbot-playbook.md`.
 The competition kit remains authoritative for the actual variant and interface.
 All bot, generator, benchmark, and simulator execution is offline.
 
-## Run locally
+## How to run
+
+Setup (installs nothing by design; the standard library is the tested path):
 
 ```sh
 python3.11 -m venv .venv
 source .venv/bin/activate
 pip install --no-index -r requirements.txt
-python -m unittest discover -s tests -v
-python -m sim.run --tables 1000 --output results/mixed.json
 ```
+
+Then, from the repo root:
+
+| Command | What it does |
+| --- | --- |
+| `python -m sim.watch` | record a fresh table and open the animated viewer |
+| `python -m sim.run --tables 1000` | full simulation report: points, histogram, bust timing, p99 |
+| `python -m unittest discover -s tests` | the whole test suite, ~2 s |
+| `python -m benchmarks.strength` / `benchmarks.policy` | timing assertions on the hot paths |
+| `python -m solver.run --game leduc --iterations 5000` | watch CFR+ converge to Nash |
+| `python -m solver.pushfold_exploit` | exploitability of the push/fold tables |
+| `python -m sim.record --tables 2` | write replay JSON without serving |
+| `python -m mit.benchmark --games 3` | play the MIT Pokerbots 2026 reference bots (setup below) |
 
 `pip install -r requirements.txt` also works. The requirements file intentionally
 has no mandatory packages: the standard-library evaluator is a fully tested
@@ -86,6 +99,46 @@ deliberately tightened calling ranges leak ~0.2 bb/hand to a perfect shover —
 the measured price of the anti-field tightening, worth it only against fields
 that shove less than Nash. This bot is intentionally exploitative, not GTO;
 the solver exists to price that deviation, not to replace it.
+
+## External benchmark: MIT Pokerbots 2026
+
+`mit/player.py` adapts the strategy core to the MIT Pokerbots 2026 engine —
+a real variant adaptation: heads-up bankroll play (so the ICM layer stays
+home; chip EV is the right frame), three hole cards, a two-card flop, each
+player discards one card face-up onto the shared board, six board cards by
+the river, 1,000 rounds at 1/2 blinds with 400-chip stacks and alternating
+seats. The adapter reuses the equity table (best two-card projection of the
+three-card hand), the evaluator, and a board-synergy discard rule.
+
+Results from `python -m mit.benchmark --games 3` (3 x 1,000 rounds each):
+
+| Opponent (published by MIT) | Mean bb/hand | Matches won |
+| --- | --- | --- |
+| skeleton | +14.37 | 3/3 |
+| reference-1 (toss smallest card) | +10.06 | 3/3 |
+| reference-2 (good-cards betting) | +10.33 | 3/3 |
+| reference-3 (Monte Carlo discard) | +9.80 | 3/3 |
+
+MIT's reference READMEs report those bots beat the skeleton in 80-100% of
+their games; this adapter beats the references themselves in every match,
+with the worst single game at +7.2 bb/hand. These are course reference bots,
+not competition winners, so the claim is "clears the published baseline set
+by a wide margin," not "world class" — but the numbers are reproducible by
+anyone against the same public opponents, which is what makes them a
+benchmark. Full per-game data in `results/mit_benchmark.json`.
+
+Setup (their license is unspecified, so their code stays out of this repo in
+the gitignored `vendor/`):
+
+```sh
+mkdir -p vendor && cd vendor
+git clone https://github.com/mitpokerbots/engine-2026
+git clone https://github.com/mitpokerbots/reference-1-2026
+git clone https://github.com/mitpokerbots/reference-2-2026
+git clone https://github.com/mitpokerbots/reference-3-2026
+cd .. && uv pip install pkrbot --python .venv/bin/python
+python -m mit.benchmark --games 3
+```
 
 ## Watch it play
 

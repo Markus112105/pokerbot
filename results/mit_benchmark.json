@@ -1,0 +1,43 @@
+{
+  "rounds_per_game": 1000,
+  "games_per_opponent": 3,
+  "engine": "mitpokerbots/engine-2026",
+  "opponents": {
+    "skeleton": {
+      "hero_deltas": [
+        30803,
+        29743,
+        25680
+      ],
+      "wins": 3,
+      "mean_bb_per_hand": 14.371
+    },
+    "reference-1-toss-smallest": {
+      "hero_deltas": [
+        22315,
+        20246,
+        17828
+      ],
+      "wins": 3,
+      "mean_bb_per_hand": 10.0648
+    },
+    "reference-2-good-cards": {
+      "hero_deltas": [
+        20754,
+        22713,
+        18540
+      ],
+      "wins": 3,
+      "mean_bb_per_hand": 10.3345
+    },
+    "reference-3-monte-carlo": {
+      "hero_deltas": [
+        19020,
+        14463,
+        25327
+      ],
+      "wins": 3,
+      "mean_bb_per_hand": 9.8017
+    }
+  }
+}
