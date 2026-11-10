@@ -39,12 +39,18 @@ standard error of a proportion:
 
 $$SE = \sqrt{\frac{p(1-p)}{n}} \le \frac{0.5}{\sqrt{n}}$$
 
-Worked example: at the table's $n = 20{,}000$ samples per class, the bound
-is $0.5/\sqrt{20000} \approx 0.0035$. So when the table says AKs wins 67.0%
-heads-up, the true value lies within roughly 66.7% to 67.4%. Decision
-thresholds are several whole points wide, so this error never flips a
-decision. A live estimate from 100 samples would be ±5 points, which flips
-close decisions constantly.
+Worked example: the table uses $n = 20{,}000$ samples per class, so
+
+$$SE = \frac{0.5}{\sqrt{20{,}000}} \approx 0.0035 = \pm 0.35 \text{ points}$$
+
+When the table says AKs wins 67.0% heads-up, the truth lies between 66.7%
+and 67.4%. Decision thresholds are several whole points wide, so this error
+never flips a decision. Compare the live-simulation budget of ~100 samples:
+
+$$SE = \frac{0.5}{\sqrt{100}} = 0.05 = \pm 5 \text{ points}$$
+
+which flips close decisions constantly. Same method, and the only
+difference is how many samples time allows.
 
 The generator runs each class against 1, 2, 4, and 7 random opponents
 because hand values collapse multiway: AKo wins about 65% heads-up but under
@@ -75,16 +81,21 @@ high bits, kickers below:
 
 $$\text{value} = \text{category} \cdot 2^{24} + \sum_i \text{kicker}_i \cdot 2^{16-4i}$$
 
-Worked example: a king-high flush scores category 5, so its value starts at
-$5 \cdot 2^{24} = 83{,}886{,}080$; an ace-high straight is category 4,
-starting at $4 \cdot 2^{24} = 67{,}108{,}864$. No kicker arithmetic can
-close a $2^{24}$ gap, so "which hand wins?" is one integer comparison, and
-"what did I make?" is `value >> 24`. The function evaluates the best five
-cards out of 5-9, which is why the same code scores a hold'em showdown
-(7 cards) and the MIT variant's 8-card showdowns unchanged. Equivalence
-with the C library eval7 was proven two ways: a pairwise ordering test over
-thousands of random boards, and a same-seed regeneration of the whole
-equity table that reproduced it byte for byte across 13.5 million showdowns.
+Worked example: a king-high flush is category 5 and an ace-high straight is
+category 4, so their values start at
+
+$$\text{flush: } 5 \cdot 2^{24} = 83{,}886{,}080 \qquad \text{straight: } 4 \cdot 2^{24} = 67{,}108{,}864$$
+
+The kicker bits can add at most $2^{20}$ or so, which can never close a
+$2^{24}$ gap. So "which hand wins?" is one integer comparison, and "what
+did I make?" is `value >> 24`.
+
+The function evaluates the best five cards out of 5-9, which is why the
+same code scores a hold'em showdown (7 cards) and the MIT variant's 8-card
+showdowns unchanged. Equivalence with the C library eval7 was proven two
+ways: a pairwise ordering test over thousands of random boards, and a
+same-seed regeneration of the whole equity table that reproduced it byte
+for byte across 13.5 million showdowns.
 
 ## 4. ICM: converting chips into tournament points
 
@@ -108,14 +119,26 @@ the payout vector built from binomial coefficients. For 8 players that is
 against brute-force enumeration of every finishing order.
 
 Worked example: three players left with stacks 4,000 / 3,000 / 1,000 and
-payouts 10 / 7 / 5 (22 points total). The big stack wins first place half
-the time ($4000/8000$), and working the race terms through gives expected
-points of 8.24, 7.73, and 6.03. Now compare chip share to point share: the
-big stack holds 50% of the chips but only 37% of the points, while the
-short stack holds 12.5% of the chips and 27% of the points. Chips lose
-value as you stack them, which is exactly why the bot declines gambles a
-cash game would take: winning 4,000 more chips gains it less than losing
-4,000 costs.
+payouts 10 / 7 / 5 (22 points total). The race identity gives the big
+stack's chance of first place:
+
+$$P(\text{1st}) = \frac{4000}{4000 + 3000 + 1000} = 0.50$$
+
+Working the remaining race terms through gives its full finish
+distribution and expected points:
+
+$$EV_{\text{big}} = 0.50 \cdot 10 + 0.37 \cdot 7 + 0.13 \cdot 5 \approx 8.24 \text{ points}$$
+
+and the same computation for the others gives 7.73 and 6.03. Now compare
+chip share to point share:
+
+$$\text{big stack: } \frac{4000}{8000} = 50\% \text{ of chips} \;\rightarrow\; \frac{8.24}{22} = 37\% \text{ of points}$$
+
+$$\text{short stack: } \frac{1000}{8000} = 12.5\% \text{ of chips} \;\rightarrow\; \frac{6.03}{22} = 27\% \text{ of points}$$
+
+Chips lose value as you stack them. That is exactly why the bot declines
+gambles a cash game would take: winning 4,000 more chips gains it less than
+losing 4,000 costs.
 
 Where ICM bites in-game:
 
@@ -144,12 +167,19 @@ $$p^* = \frac{c}{P + c}$$
 
 Worked example: the pot is 300 and an opponent bets 100. The pot you win
 includes their bet, so you call 100 to win the 400 already out there:
-$p^* = 100/500 = 20\%$. The bot then
-demands measured margins above breakeven, never equality: +5 points of
-equity to call a short-stack shove, +8 postflop, +10-15 more near a payout
-cliff. With the +8 margin the hand must win 28% of the time, not 20%. The
-margins absorb estimation error (equity-vs-random is a proxy for
-equity-vs-range) and buy survival on purpose.
+
+$$p^* = \frac{100}{400 + 100} = \frac{100}{500} = 20\%$$
+
+The bot then demands measured margins above breakeven, never equality: +5
+points of equity to call a short-stack shove, +8 postflop, +10-15 more near
+a payout cliff. With the postflop margin the requirement becomes
+
+$$20\% + 8\% = 28\%$$
+
+so a hand that wins a quarter of the time folds here even though a
+pure-odds player would call. The margins absorb estimation error
+(equity-vs-random is a proxy for equity-vs-range) and buy survival on
+purpose.
 
 Raising adds a fold-equity term. If each live opponent folds with
 probability $f_i$, the raise's value is
@@ -173,14 +203,19 @@ rate toward a population prior with shrinkage:
 $$\hat{p} = \frac{k \cdot p_{\text{prior}} + n \cdot \bar{x}}{k + n}, \qquad k = 15$$
 
 Worked example: the prior for fold-to-raise is 0.5, and a player has folded
-to a raise 6 times out of 6. The estimate is
-$(15 \cdot 0.5 + 6 \cdot 1.0)/21 \approx 0.64$, still below the 0.7
-"folder" threshold, so the bot does not start stealing yet. After 12 folds
-out of 12 the estimate reaches $(7.5 + 12)/27 \approx 0.72$ and the steal
-rule switches on. Six data points move the needle; six data points do not
-flip the strategy. That speed is matched to the game: a table lasts at most
-200 hands, so reads must be usable after ~20 and must never explode off two
-samples.
+to a raise 6 times out of 6. The blended estimate is
+
+$$\hat{p} = \frac{15 \cdot 0.5 + 6 \cdot 1.0}{15 + 6} = \frac{13.5}{21} \approx 0.64$$
+
+still below the 0.7 "folder" threshold, so the bot does not start stealing
+yet. After 12 folds out of 12:
+
+$$\hat{p} = \frac{15 \cdot 0.5 + 12 \cdot 1.0}{15 + 12} = \frac{19.5}{27} \approx 0.72$$
+
+and the steal rule switches on. Six data points move the needle; six data
+points do not flip the strategy. That speed is matched to the game: a table
+lasts at most 200 hands, so reads must be usable after ~20 and must never
+explode off two samples.
 
 Three archetype rules consume the estimates:
 
@@ -207,14 +242,18 @@ $$EV_{\text{fold}} = -\tfrac{1}{2}, \qquad EV_{\text{shove}} = P(\text{fold}) \c
 
 and the caller's mirror: call when $2S \cdot \text{eq} - S > -1$.
 
-Worked example with illustrative round numbers: $S = 8$ bb, you hold a
-hand with 42% equity when called, and the opponent calls 30% of the time.
-Shoving earns $0.7 \cdot 1 + 0.3 \cdot (16 \cdot 0.42 - 8) = 0.7 - 0.38 =
-+0.32$ bb, against $-0.5$ bb for folding. The shove is worth +0.82 bb even
-though the hand loses most called showdowns, because the blind you steal
-70% of the time pays for the losses. This is why first-in shove ranges get
-so wide at short stacks, and why opponents who fold too much hand over
-their stacks one blind at a time.
+Worked example with illustrative round numbers: $S = 8$ bb, you hold a hand
+with 42% equity when called, and the opponent calls 30% of the time.
+Plugging in:
+
+$$EV_{\text{shove}} = 0.70 \cdot (+1) + 0.30 \cdot \big(2 \cdot 8 \cdot 0.42 - 8\big) = 0.70 - 0.38 = +0.32 \text{ bb}$$
+
+$$EV_{\text{shove}} - EV_{\text{fold}} = +0.32 - (-0.50) = +0.82 \text{ bb}$$
+
+The shove is worth +0.82 bb over folding even though the hand loses most
+called showdowns, because the blind you steal 70% of the time pays for the
+losses. This is why first-in shove ranges get so wide at short stacks, and
+why opponents who fold too much hand over their stacks one blind at a time.
 
 Solving the shove and call ranges against each other at every depth gives
 the Nash jam/fold equilibrium. The repo's tables (`tables/pushfold.py`)
@@ -237,10 +276,13 @@ the next iteration plays actions in proportion to positive regret:
 $$\sigma(a) = \frac{R^+(a)}{\sum_b R^+(b)}$$
 
 Worked example: if an infoset's accumulated regrets for fold / call / raise
-are $[3, 0, 1]$, the next iteration plays them with probabilities
-$[0.75, 0, 0.25]$. Actions that keep underperforming decay to zero; actions
-that would have won gain weight. The time-averaged strategy provably
-converges to a Nash equilibrium in two-player zero-sum games.
+are $[3, 0, 1]$, the next iteration plays
+
+$$\sigma = \left[\frac{3}{3+0+1},\; \frac{0}{4},\; \frac{1}{4}\right] = [0.75,\; 0,\; 0.25]$$
+
+Actions that keep underperforming decay to zero; actions that would have
+won gain weight. The time-averaged strategy provably converges to a Nash
+equilibrium in two-player zero-sum games.
 `solver/cfr.py` implements the CFR+ variant: regrets clipped at zero,
 linear averaging, and **alternating** updates (one player updated per
 traversal; with simultaneous updates the clipped variant demonstrably
