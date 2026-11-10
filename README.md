@@ -1,5 +1,7 @@
 # Offline pokerbot
 
+[![CI](https://github.com/Markus112105/pokerbot/actions/workflows/ci.yml/badge.svg)](https://github.com/Markus112105/pokerbot/actions/workflows/ci.yml)
+
 ## The strategy in plain words
 
 Most teams will try to build a bot that plays brilliant poker. Ours is built
