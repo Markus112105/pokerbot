@@ -2,7 +2,7 @@
 
 ## The strategy in plain words
 
-Most teams will try to build a bot that plays brilliant poker — ours is built
+Most teams will try to build a bot that plays brilliant poker. Ours is built
 to simply never die. The competition scores you on where you finish at each
 table, not how many chips you win, and the field will be full of student bots
 that play way too many hands and knock each other out. So our bot folds almost
@@ -10,44 +10,44 @@ everything early and lets the fireworks happen around it, then switches gears
 as the blinds get big: it follows a pre-calculated "shove or fold" chart for
 short stacks (math that's basically solved), and before any big risk it asks
 "is this gamble actually worth it given the prize structure?" instead of just
-chasing chips. Along the way it takes cheap notes on each opponent — steal
+chasing chips. Along the way it takes cheap notes on each opponent: steal
 from the ones who always fold, never bluff the ones who always call. The real
 difference, though, is engineering: every bot gets just one millisecond to
-act, and any crash or delay means an automatic fold — so instead of doing
+act, and any crash or delay means an automatic fold. So instead of doing
 fancy calculations live, we did all the heavy math at home and the bot just
 looks up answers, instantly, every single time. It will work because
 tight-and-reliable beats clever-and-crashing in a survival game: we don't have
 to outplay anyone, we just have to still be standing while everyone else's
 bots knock each other out or break.
 
-The bot changes personality as the game ages — the mode is picked by how big
+The bot changes personality as the game ages. The mode is picked by how big
 your stack is compared to the blinds, which the rising blinds shrink for
 everyone:
 
 - **Early game** (everyone deep, blinds tiny): extremely tight. Play only
   strong hands, bet them for value, never bluff, and never call a huge bet
   without a monster. Folding costs almost nothing here, and the reckless bots
-  are busy eliminating each other — the goal is to not be at the crash site.
+  are busy eliminating each other. The goal is to not be at the crash site.
 - **Mid game** (blinds climbing, stacks worth 15-30 big blinds): raise or
   fold, almost never just call. Open fewer but stronger hands, start stealing
   blinds from opponents the tracker has seen folding too often, and ditch
   marginal hands before they become expensive.
 - **Late game** (short stacks, huge blinds): all-in or fold, straight from a
-  precomputed chart — short-stack poker is close to mathematically solved, and
+  precomputed chart, because short-stack poker is close to mathematically solved, and
   badly built bots that limp or blind away get punished mechanically here.
   Every big risk is priced in tournament points, not chips ("does this gamble
   improve my expected finishing position?"), and near the hand cap the bot
   even checks whether folding every remaining hand locks in a better payout
   than playing on.
 
-This is deliberately **not** another GTO solver — plenty of those exist. A
+This is deliberately **not** another GTO solver; plenty of those exist. A
 game-theory-optimal bot plays "unbeatable" poker against perfect opponents;
 this bot instead plays survival-first, exploitative poker against the flawed
 opponents that actually show up, folding more than theory says early and
 punishing the field's specific leaks (over-folding, over-calling, blinding
 away) harder than theory says. The repo does include a solver (`solver/`), but
 its job is measurement, not play: it computes exactly how far the bot strays
-from equilibrium — about 0.09 bb/hand in the push/fold game — so the cost of
+from equilibrium (about 0.09 bb/hand in the push/fold game), so the cost of
 playing exploitatively is a known, chosen number instead of a guess.
 
 Python 3.11 preparation repo for the rules in `no-limit-pokerbot-playbook.md`.
@@ -125,14 +125,14 @@ card-removal-aware equity matrix from `python -m solver.matchups`) solves the
 heads-up jam/fold game to Nash at every depth (solver residual 0.000) and
 best-responds against this repo's tables. Finding: the shove ranges are
 near-unexploitable (a perfect caller gains nothing at most depths), while the
-deliberately tightened calling ranges leak ~0.2 bb/hand to a perfect shover —
+deliberately tightened calling ranges leak ~0.2 bb/hand to a perfect shover:
 the measured price of the anti-field tightening, worth it only against fields
 that shove less than Nash. This bot is intentionally exploitative, not GTO;
 the solver exists to price that deviation, not to replace it.
 
 ## External benchmark: MIT Pokerbots 2026
 
-`mit/player.py` adapts the strategy core to the MIT Pokerbots 2026 engine —
+`mit/player.py` adapts the strategy core to the MIT Pokerbots 2026 engine,
 a real variant adaptation: heads-up bankroll play (so the ICM layer stays
 home; chip EV is the right frame), three hole cards, a two-card flop, each
 player discards one card face-up onto the shared board, six board cards by
@@ -153,7 +153,7 @@ MIT's reference READMEs report those bots beat the skeleton in 80-100% of
 their games; this adapter beats the references themselves in every match,
 with the worst single game at +7.2 bb/hand. These are course reference bots,
 not competition winners, so the claim is "clears the published baseline set
-by a wide margin," not "world class" — but the numbers are reproducible by
+by a wide margin," not "world class". But the numbers are reproducible by
 anyone against the same public opponents, which is what makes them a
 benchmark. Full per-game data in `results/mit_benchmark.json`.
 
@@ -180,7 +180,8 @@ records a fresh table (random seed, printed for reproducibility), starts a
 local server, and opens the animated table in the browser: seats, hole cards,
 board, pot, per-action log, standings, playback from 0.25x to 256x, and a
 cards toggle (all face up for analysis, or hero-only with showdown reveals).
-Face-up cards are for the viewer only — bots never see each other's hands;
+Face-up cards are for the viewer only; bots never see each other's hands,
+since
 engine states carry only the acting bot's own cards. `python -m sim.record`
 writes replay JSON without serving; the page's file picker loads any of them.
 
@@ -254,7 +255,7 @@ create many more classes, so the five-minute budget is not guaranteed for every
 variant. Measured on this laptop at 20,000 samples: standard hold'em is 6.4 s
 with eval7 (0.04 s/class) and 25.3 s with the built-in ranker (0.15 s/class),
 while a variant module with a custom Python `rank` function costs about
-2.4 s/class — 16x the built-in ranker — so the 81-class short deck took 3:16
+2.4 s/class (16x the built-in ranker), so the 81-class short deck took 3:16
 and a 169-class custom variant projects to ~6:50, over the five-minute budget.
 Day-of rule: for any custom-ranking variant, generate the first table with
 `--samples 10000` (~3:25 at 169 classes), submit the T1 floor, regenerate at
