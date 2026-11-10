@@ -1,4 +1,4 @@
-"""Policy contract and automated portions of the playbook failure checklist."""
+"""Policy contract and automated failure-mode checks (legality, fallbacks, phases)."""
 import ast
 import inspect
 import itertools

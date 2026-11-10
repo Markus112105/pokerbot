@@ -51,10 +51,6 @@ but its job is measurement, not play: it computes exactly how far the bot
 strays from equilibrium (about 0.09 bb/hand in the push/fold game), so the
 cost of playing exploitatively is a known, chosen number instead of a guess.
 
-The project began as preparation for a timed pokerbot competition; the
-original strategy document (`no-limit-pokerbot-playbook.md`) and build plan
-(`DAY_OF_PLAN.md`) are kept as history.
-
 ## How to run
 
 Setup (installs nothing by design; the standard library is the tested path):

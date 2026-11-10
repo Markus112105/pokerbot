@@ -1,8 +1,8 @@
 """Small no-limit hold'em SNG engine with real betting rounds and side pots.
 
 Raises are total street contributions. Blinds double every 25 hands by
-default; the precise schedule, simultaneous-bust tie rule and odd-chip rule
-are local assumptions to verify against the competition starter kit.
+default; the blind schedule, simultaneous-bust tie rule and odd-chip rule are
+this engine's own conventions, configurable where the constructor allows.
 """
 from dataclasses import dataclass
 from random import Random
@@ -141,7 +141,7 @@ class Engine:
         self.timings.append(elapsed)
         self.timing_seats.append(seat)
         if elapsed > 1_000_000:
-            # The cutoff is enforced on wall time, as the kit would. A call
+            # The cutoff is enforced on wall time, as a live arbiter would. A call
             # whose thread-CPU time stayed under budget was descheduled by the
             # host, so it is a stall charged to the machine, not a bot timeout.
             detail = dict(bot=bot.name, hand=state.get("hand_number"),

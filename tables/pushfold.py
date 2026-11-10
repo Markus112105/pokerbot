@@ -1,8 +1,9 @@
 """Transparent push/fold approximation, not a solved eight-player equilibrium.
 
 References for the method: HoldemResources heads-up Nash charts
-(https://www.holdemresources.net/hune) and the local playbook's 8-BB BTN ~45%
-and UTG ~15% anchors. No chart data are downloaded or copied. Ranges below are
+(https://www.holdemresources.net/hune) plus two standard short-stack anchors
+(8-BB button shove ~45% of hands, 8-BB under-the-gun ~15%). No chart data are
+downloaded or copied. Ranges below are
 an explicit interpolation of these anchors using random-opponent equity order,
 tightened by multiplying the selected range fraction by 0.90 for eight-handed
 play. Calling ranges are deliberately narrower. Actual ICM remains a separate

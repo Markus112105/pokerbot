@@ -1,7 +1,8 @@
-"""Competition adapter. Amounts are total street contributions, never increments.
+"""Engine-facing adapter. Amounts are total street contributions, never increments.
 
-Only adapt normalize_state / encode_action to the kit. Timing and logging are
-opt-in local instrumentation; submitted Agent() performs no logging or I/O.
+Only normalize_state / encode_action change when targeting a new engine
+interface (mit/player.py is a worked example). Timing and logging are opt-in
+local instrumentation; the plain Agent() performs no logging or I/O.
 """
 import logging
 import math
