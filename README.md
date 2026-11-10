@@ -40,6 +40,16 @@ everyone:
   even checks whether folding every remaining hand locks in a better payout
   than playing on.
 
+This is deliberately **not** another GTO solver — plenty of those exist. A
+game-theory-optimal bot plays "unbeatable" poker against perfect opponents;
+this bot instead plays survival-first, exploitative poker against the flawed
+opponents that actually show up, folding more than theory says early and
+punishing the field's specific leaks (over-folding, over-calling, blinding
+away) harder than theory says. The repo does include a solver (`solver/`), but
+its job is measurement, not play: it computes exactly how far the bot strays
+from equilibrium — about 0.09 bb/hand in the push/fold game — so the cost of
+playing exploitatively is a known, chosen number instead of a guess.
+
 Python 3.11 preparation repo for the rules in `no-limit-pokerbot-playbook.md`.
 The competition kit remains authoritative for the actual variant and interface.
 All bot, generator, benchmark, and simulator execution is offline.
