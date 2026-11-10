@@ -83,7 +83,7 @@ for byte across 13.5 million showdowns.
 
 ## 4. ICM: converting chips into tournament points
 
-**In-game question: "this shove risks my tournament life — is it worth it
+**In-game question: "this shove risks my tournament life. Is it worth it
 in prize money, not chips?"**
 
 In a tournament, chips are not points. If payouts are 10/7/5 for three
@@ -148,7 +148,7 @@ entropy calls, nothing time-dependent inside a decision.
 
 ## 6. Bayesian opponent modeling
 
-**In-game question: "this player has folded six times — can I steal yet?"**
+**In-game question: "this player has folded six times, so can I steal yet?"**
 
 Raw frequencies lie early: an opponent who folded twice in two chances is
 not a 100% folder. The tracker (`bot/tracker.py`) blends every observed
@@ -174,7 +174,7 @@ The tracker also buckets fold rates by bet size (under 40% pot, 40-60,
 
 ## 7. Push/fold: the solved endgame
 
-**In-game question: "8 big blinds on the button — which hands do I shove?"**
+**In-game question: "8 big blinds on the button, which hands do I shove?"**
 
 Short-stack play is nearly a solved game because the tree collapses: with
 under ~15 big blinds, raising small just commits you anyway, so the only
@@ -210,7 +210,7 @@ $$\sigma(a) = \frac{R^+(a)}{\sum_b R^+(b)}$$
 The time-averaged strategy provably converges to a Nash equilibrium in
 two-player zero-sum games. `solver/cfr.py` implements the CFR+ variant:
 regrets clipped at zero, linear averaging, and **alternating** updates
-(one player updated per traversal — with simultaneous updates the clipped
+(one player updated per traversal; with simultaneous updates the clipped
 variant demonstrably stalls, which this repo reproduced before fixing).
 
 **Exploitability** is the yardstick: compute the best response to a
