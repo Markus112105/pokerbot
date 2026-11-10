@@ -181,8 +181,7 @@ local server, and opens the animated table in the browser: seats, hole cards,
 board, pot, per-action log, standings, playback from 0.25x to 256x, and a
 cards toggle (all face up for analysis, or hero-only with showdown reveals).
 Face-up cards are for the viewer only; bots never see each other's hands,
-since
-engine states carry only the acting bot's own cards. `python -m sim.record`
+since engine states carry only the acting bot's own cards. `python -m sim.record`
 writes replay JSON without serving; the page's file picker loads any of them.
 
 ## Files and contracts
