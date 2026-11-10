@@ -62,11 +62,46 @@ baseline averages are per seat/table, so the duplicated random bot is normalized
 correctly. Tied finishes share histogram counts. At the cap, fractional counts
 are ICM finish probabilities, not invented realized finish positions.
 
+## Solver and measured results
+
+`solver/` holds an exact CFR+ implementation (alternating updates, regret
+matching+, linear averaging) with best-response exploitability, verified
+against Kuhn poker's closed-form Nash value and run on the standard research
+benchmarks (all exploitabilities in chips or bb per hand; zero is Nash):
+
+| Measurement | Result |
+| --- | --- |
+| Kuhn value after 200k iterations (exact: -1/18 = -0.05556) | -0.05558 |
+| Kuhn exploitability | 0.00034 |
+| Leduc hold'em value after 25k iterations (published ~ -0.0856) | -0.08580 |
+| Leduc exploitability | 0.0083 |
+| Push/fold tables, mean exploitability over depths 2-15 bb | 0.088 bb/hand |
+
+The push/fold measurement (`python -m solver.pushfold_exploit`, needing the
+card-removal-aware equity matrix from `python -m solver.matchups`) solves the
+heads-up jam/fold game to Nash at every depth (solver residual 0.000) and
+best-responds against this repo's tables. Finding: the shove ranges are
+near-unexploitable (a perfect caller gains nothing at most depths), while the
+deliberately tightened calling ranges leak ~0.2 bb/hand to a perfect shover —
+the measured price of the anti-field tightening, worth it only against fields
+that shove less than Nash. This bot is intentionally exploitative, not GTO;
+the solver exists to price that deviation, not to replace it.
+
+## Watch it play
+
+`python -m sim.record --tables 2` writes a full replay
+(`results/replays/demo.json`); `viewer/table.html` animates it — seats, hole
+cards, board, pot, per-action log, standings, playback from 0.25x to 256x.
+Serve the repo root (`python -m http.server`) and open
+`/viewer/table.html`, or load any recorded JSON with the page's file picker.
+
 ## Files and contracts
 
 | File | Responsibility |
 | --- | --- |
 | `bot/agent.py` | Normalize kit state, safety wrapper, legal clamp, encode action |
+| `solver/` | CFR+, Kuhn/Leduc games, best response, jam/fold exploitability |
+| `sim/record.py`, `viewer/table.html` | Replay recording and the animated table |
 | `bot/tables.py` | Import-time data loading and variant seam |
 | `bot/strength.py` | Preflop equity/percentiles and postflop features |
 | `bot/icm.py` | Exact ICM; full field and fast single-seat queries |

@@ -1,0 +1,350 @@
+<title>Pokerbot Table Replay</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* layout: table arena left, control/log rail right, stacking to one column on phones */
+:root{
+  --bg:#101512; --panel:#18201b; --panel2:#1e2a22; --fg:#e8ece9; --muted:#93a39a;
+  --felt:#1d4a33; --felt-edge:#143425; --line:#2c3a32; --accent:#d9a93f;
+  --raise:#e07840; --callc:#5aa9e6; --win:#7fc97f; --card-face:#f7f5ef;
+  --card-red:#c23b3b; --card-black:#23252a; --hero:#d9a93f;
+  --display:"Space Grotesk",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f2f1ec; --panel:#ffffff; --panel2:#eceae2; --fg:#1d241f; --muted:#5d6a62;
+    --felt:#2a6a49; --felt-edge:#1d4a33; --line:#d8d5ca; --accent:#a97b14;
+    --raise:#c05a24; --callc:#2a6fb0; --win:#2e7d32; --card-face:#ffffff;
+    --card-red:#c23b3b; --card-black:#23252a; --hero:#a97b14;
+    color-scheme:light;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f2f1ec; --panel:#ffffff; --panel2:#eceae2; --fg:#1d241f; --muted:#5d6a62;
+  --felt:#2a6a49; --felt-edge:#1d4a33; --line:#d8d5ca; --accent:#a97b14;
+  --raise:#c05a24; --callc:#2a6fb0; --win:#2e7d32; --card-face:#ffffff;
+  --card-red:#c23b3b; --card-black:#23252a; --hero:#a97b14;
+  color-scheme:light;
+}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:14px;}
+h1{font-family:var(--display);font-size:1.25rem;margin:0;text-wrap:balance}
+.sub{color:var(--muted);font-size:.8rem;margin:2px 0 12px}
+.wrap{display:flex;gap:16px;flex-wrap:wrap;align-items:stretch}
+.arena{flex:2 1 520px;min-width:0}
+.rail{flex:1 1 280px;min-width:0;display:flex;flex-direction:column;gap:12px}
+.tablebox{position:relative;width:100%;aspect-ratio:1.55;max-width:100%}
+.felt{position:absolute;inset:9% 7%;background:radial-gradient(ellipse at 50% 40%,var(--felt),var(--felt-edge));
+  border-radius:50%/52%;border:6px solid var(--felt-edge);box-shadow:inset 0 0 40px rgba(0,0,0,.35)}
+.center{position:absolute;left:50%;top:47%;transform:translate(-50%,-50%);text-align:center;width:60%}
+.board{display:flex;gap:4px;justify-content:center;min-height:52px}
+.pot{margin-top:6px;font-size:.85rem;color:#f3e9cf;font-variant-numeric:tabular-nums}
+.pot b{color:var(--accent)}
+.blinds{font-size:.68rem;color:#cfdcd2;opacity:.85;margin-top:2px}
+.seat{position:absolute;width:118px;transform:translate(-50%,-50%);text-align:center;transition:opacity .25s}
+@media (prefers-reduced-motion: reduce){.seat,.seat *{transition:none !important}}
+.chipname{display:flex;align-items:center;justify-content:center;gap:4px;font-size:.7rem;font-weight:600;
+  background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px 8px;margin:2px auto 0;width:fit-content;max-width:100%}
+.seat.hero .chipname{border-color:var(--hero);box-shadow:0 0 0 1px var(--hero)}
+.seat.acting .chipname{outline:2px solid var(--accent)}
+.stack{font-size:.72rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.cards{display:flex;gap:3px;justify-content:center;min-height:44px}
+.card{width:30px;height:42px;border-radius:4px;background:var(--card-face);border:1px solid #b9b4a4;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;line-height:1}
+.card .s{font-size:.7rem}
+.card.red{color:var(--card-red)} .card.black{color:var(--card-black)}
+.bet{position:absolute;font-size:.68rem;background:var(--panel2);border:1px solid var(--line);
+  border-radius:999px;padding:1px 7px;transform:translate(-50%,-50%);font-variant-numeric:tabular-nums}
+.tag{font-size:.62rem;border-radius:4px;padding:1px 5px;display:inline-block;margin-top:2px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.tag.raise{background:var(--raise);color:#fff}.tag.call{background:var(--callc);color:#fff}
+.tag.check{background:var(--panel2);color:var(--fg)}.tag.fold{background:var(--panel2);color:var(--muted)}
+.tag.win{background:var(--win);color:#fff}.tag.blind{background:var(--panel2);color:var(--muted)}
+.seat.folded .cards,.seat.folded .chipname{opacity:.35}
+.seat.out{opacity:.3}
+.btn{position:absolute;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#16130a;
+  font-size:.62rem;font-weight:700;display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.panel h2{font-family:var(--display);font-size:.8rem;margin:0 0 8px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button{font:inherit;font-size:.8rem;font-weight:600;background:var(--panel2);color:var(--fg);
+  border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer}
+button:hover{border-color:var(--accent)} button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button.primary{background:var(--accent);color:#16130a;border-color:var(--accent)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;font-size:.78rem}
+input[type=range]{flex:1;min-width:120px;accent-color:var(--accent)}
+select{font:inherit;font-size:.78rem;background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:4px 6px}
+.log{font-size:.74rem;line-height:1.5;max-height:230px;overflow-y:auto;color:var(--muted)}
+.log b{color:var(--fg)} .log .street{color:var(--accent);font-weight:600}
+.stand{width:100%;border-collapse:collapse;font-size:.78rem;font-variant-numeric:tabular-nums}
+.stand td,.stand th{text-align:left;padding:3px 6px;border-bottom:1px solid var(--line)}
+.stand td:last-child,.stand th:last-child{text-align:right}
+.stand tr.hero td{color:var(--hero);font-weight:600}
+.note{font-size:.72rem;color:var(--muted);margin-top:8px}
+#status{font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums;margin-left:auto}
+@media (max-width:700px){.seat{width:86px}.card{width:24px;height:34px;font-size:.68rem}.cards{min-height:36px}.tablebox{aspect-ratio:1.2}}
+</style>
+
+<h1>Pokerbot Table Replay</h1>
+<div class="sub">Recorded 8-max sit-and-go hands from the local engine — the tight, ICM-aware bot is <b style="color:var(--hero)">hero</b>. All cards face-up for the demo.</div>
+
+<div class="wrap">
+  <div class="arena">
+    <div class="tablebox" id="tablebox">
+      <div class="felt"></div>
+      <div class="center">
+        <div class="board" id="board"></div>
+        <div class="pot" id="pot"></div>
+        <div class="blinds" id="blinds"></div>
+      </div>
+    </div>
+  </div>
+  <div class="rail">
+    <div class="panel">
+      <h2>Playback</h2>
+      <div class="controls">
+        <button class="primary" id="playbtn">Play</button>
+        <button id="stepbtn">Step</button>
+        <button id="prevhand">&#10216; Hand</button>
+        <button id="nexthand">Hand &#10217;</button>
+        <span id="status"></span>
+      </div>
+      <div class="row">
+        <label for="speed">Speed</label>
+        <input type="range" id="speed" min="0" max="9" step="1" value="3">
+        <span id="speedlabel">1×</span>
+      </div>
+      <div class="row">
+        <label for="handslider">Hand</label>
+        <input type="range" id="handslider" min="0" max="0" step="1" value="0">
+        <select id="tablesel"></select>
+      </div>
+      <div class="row">
+        <label for="filein">Replay file</label>
+        <input type="file" id="filein" accept=".json">
+      </div>
+    </div>
+    <div class="panel"><h2>Action</h2><div class="log" id="log"></div></div>
+    <div class="panel"><h2>Standings</h2><table class="stand" id="standings"></table>
+      <div class="note" id="standnote"></div></div>
+  </div>
+</div>
+
+<script>
+// everything below drives the replay from the recorded json -- steps are
+// precomputed per hand so scrubbing and 256x playback stay cheap
+// any value that came from a loaded file goes through esc before innerHTML
+// because the file picker accepts arbitrary json
+const SUITS = {s:"♠", h:"♥", d:"♦", c:"♣"};
+const SPEEDS = [0.25, 0.5, 1, 2, 4, 8, 16, 64, 128, 256];
+let replays = [], table = 0, hand = 0, step = 0, steps = [], playing = false, timer = null;
+let foldedSeats = new Set(), lastTag = {};
+
+const $ = id => document.getElementById(id);
+const esc = v => String(v).replace(/[&<>"']/g, c =>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function cardEl(code){
+  const d = document.createElement("div");
+  const suit = String(code)[1], red = suit === "h" || suit === "d";
+  d.className = "card " + (red ? "red" : "black");
+  const rank = document.createElement("span"); rank.textContent = String(code)[0];
+  const s = document.createElement("span"); s.className = "s"; s.textContent = SUITS[suit] || "?";
+  d.append(rank, s);
+  return d;
+}
+
+// seat coordinates around the ellipse with hero rotated to the bottom
+function seatXY(index, heroIndex, n){
+  const angle = Math.PI / 2 + 2 * Math.PI * ((index - heroIndex + n) % n) / n;
+  return [50 + 44 * Math.cos(angle), 50 + 42 * Math.sin(angle)];
+}
+function betXY(x, y){ return [50 + (x - 50) * 0.52, 47 + (y - 47) * 0.48]; }
+
+// a hand becomes a flat list of steps: post blinds, each action, each board
+// reveal, then the settle so one cursor drives table state and the log
+function buildSteps(h, names){
+  const out = [];
+  const bets = names.map(() => 0), stacks = h.stacks.slice();
+  const post = (seat, amount) => { const a = Math.min(amount, stacks[seat]); stacks[seat] -= a; bets[seat] += a; };
+  post(h.sb_seat, h.sb); post(h.bb_seat, h.bb);
+  out.push({kind:"start", bets:bets.slice(), stacks:stacks.slice(), pot:h.sb+h.bb, board:[],
+            text:`<span class="street">hand ${esc(h.hand)}</span> blinds ${esc(h.sb)}/${esc(h.bb)}`});
+  const byStreet = {preflop:[], flop:[], turn:[], river:[]};
+  for(const a of h.acts) if(byStreet[a.street]) byStreet[a.street].push(a);
+  const boards = Object.fromEntries(h.boards.map(b => [b.street, b.board]));
+  let pot = h.sb + h.bb, board = [];
+  for(const street of ["preflop","flop","turn","river"]){
+    if(street !== "preflop" && boards[street]){
+      board = boards[street];
+      out.push({kind:"board", street, board:board.slice(), bets:names.map(()=>0),
+                stacks:null, pot, text:`<span class="street">${esc(street)}</span> ${esc(board.join(" "))}`});
+    }
+    for(const a of byStreet[street]){
+      pot = a.pot;
+      const to = a.bets[a.seat];
+      const verb = a.action === "raise" ? `raises to ${esc(to)}` : esc(a.action) + (a.action === "call" ? "s" : "s");
+      out.push({kind:"act", seat:a.seat, action:a.action, bets:a.bets.slice(), stacks:a.stacks.slice(),
+                pot, board:board.slice(), text:`<b>${esc(names[a.seat])}</b> ${verb}`});
+    }
+  }
+  out.push({kind:"settle", stacks:h.settle.stacks.slice(), bets:names.map(()=>0), pot:0,
+            board:board.slice(), showdown:h.settle.showdown,
+            text:`pot settles · ${esc(h.settle.stacks.filter(s=>s>0).length)} bots live`});
+  return out;
+}
+
+function render(){
+  const r = replays[table]; if(!r) return;
+  const h = r.hands[hand], s = steps[Math.min(step, steps.length - 1)];
+  const box = $("tablebox"), n = r.names.length, heroIndex = r.names.indexOf("hero");
+  box.querySelectorAll(".seat,.bet,.btn").forEach(e => e.remove());
+  const live = s.stacks || h.stacks;
+  for(let i = 0; i < n; i++){
+    const [x, y] = seatXY(i, heroIndex, n);
+    const seat = document.createElement("div");
+    seat.className = "seat";
+    if(i === heroIndex) seat.classList.add("hero");
+    if(s.kind === "act" && s.seat === i) seat.classList.add("acting");
+    if(foldedSeats.has(i)) seat.classList.add("folded");
+    if(h.stacks[i] <= 0) seat.classList.add("out");
+    const cards = document.createElement("div"); cards.className = "cards";
+    const hole = h.holes[String(i)];
+    if(hole && h.stacks[i] > 0){ cards.append(cardEl(hole[0]), cardEl(hole[1])); }
+    seat.append(cards);
+    const nameEl = document.createElement("div"); nameEl.className = "chipname";
+    nameEl.textContent = r.names[i]; seat.append(nameEl);
+    const stackEl = document.createElement("div"); stackEl.className = "stack";
+    stackEl.textContent = h.stacks[i] > 0 ? live[i] : "out"; seat.append(stackEl);
+    if(lastTag[i]){ const t = document.createElement("div");
+      t.className = "tag " + lastTag[i].cls; t.textContent = lastTag[i].text; seat.append(t); }
+    seat.style.left = x + "%"; seat.style.top = y + "%";
+    box.append(seat);
+    if(s.bets && s.bets[i] > 0){
+      const [bx, by] = betXY(x, y);
+      const bet = document.createElement("div"); bet.className = "bet";
+      bet.textContent = s.bets[i]; bet.style.left = bx + "%"; bet.style.top = by + "%";
+      box.append(bet);
+    }
+    if(i === h.button){
+      const [bx, by] = betXY(x, y);
+      const btn = document.createElement("div"); btn.className = "btn"; btn.textContent = "D";
+      btn.style.left = (bx + 6) + "%"; btn.style.top = (by - 9) + "%"; box.append(btn);
+    }
+  }
+  const boardEl = $("board"); boardEl.innerHTML = "";
+  for(const c of (s.board || [])) boardEl.append(cardEl(c));
+  $("pot").innerHTML = s.pot ? `pot <b>${esc(s.pot)}</b>` : "";
+  $("blinds").textContent = `hand ${h.hand} · blinds ${h.sb}/${h.bb} · table ${r.table}`;
+  $("status").textContent = `hand ${hand + 1}/${r.hands.length} · step ${Math.min(step + 1, steps.length)}/${steps.length}`;
+  $("handslider").max = r.hands.length - 1; $("handslider").value = hand;
+}
+
+const currentHand = () => replays[table].hands[hand];
+
+function applyStep(s){
+  if(s.kind === "start"){ foldedSeats = new Set(); lastTag = {};
+    lastTag[currentHand().sb_seat] = {cls:"blind", text:"sb"};
+    lastTag[currentHand().bb_seat] = {cls:"blind", text:"bb"}; }
+  if(s.kind === "act"){
+    lastTag[s.seat] = {cls: s.action, text: s.action === "raise" ? "raise " + s.bets[s.seat] : s.action};
+    if(s.action === "fold") foldedSeats.add(s.seat);
+  }
+  if(s.kind === "board"){ for(const k in lastTag) if(lastTag[k].cls !== "fold") delete lastTag[k]; }
+  if(s.kind === "settle"){
+    for(const i of s.showdown || []) if(!foldedSeats.has(i)) lastTag[i] = {cls:"check", text:"shows"};
+    const prev = steps[steps.length - 2];
+    if(prev && prev.stacks) s.stacks.forEach((after, i) => {
+      if(after > prev.stacks[i]) lastTag[i] = {cls:"win", text:"wins"}; });
+  }
+  log(s.text);
+}
+
+function log(html){
+  const el = $("log"), line = document.createElement("div");
+  line.innerHTML = html; el.append(line);
+  while(el.children.length > 120) el.firstChild.remove();
+  el.scrollTop = el.scrollHeight;
+}
+
+function loadHand(index, clearLog){
+  hand = Math.max(0, Math.min(index, replays[table].hands.length - 1));
+  steps = buildSteps(currentHand(), replays[table].names);
+  step = 0; foldedSeats = new Set(); lastTag = {};
+  if(clearLog) $("log").innerHTML = "";
+  applyStep(steps[0]); render();
+}
+
+function advance(){
+  if(step + 1 < steps.length){ step++; applyStep(steps[step]); render(); return true; }
+  if(hand + 1 < replays[table].hands.length){ loadHand(hand + 1); return true; }
+  standings(true); setPlaying(false); log("<b>table complete</b>"); return false;
+}
+
+function tick(){
+  if(!playing) return;
+  const speed = SPEEDS[$("speed").value];
+  // at high speed burn several steps per frame so 256x really flies
+  const burst = speed >= 16 ? Math.round(speed / 8) : 1;
+  for(let i = 0; i < burst; i++) if(!advance()) return;
+  timer = setTimeout(tick, Math.max(8, 650 / speed));
+}
+
+function setPlaying(on){
+  playing = on; $("playbtn").textContent = on ? "Pause" : "Play";
+  clearTimeout(timer); if(on) tick();
+}
+
+function standings(final){
+  const r = replays[table];
+  const rows = r.names.map((name, i) => ({name, points: r.points[i], stack: r.final_stacks[i]}))
+    .sort((a, b) => b.points - a.points);
+  const t = $("standings"); t.innerHTML = "";
+  const head = t.insertRow(); ["bot", "stack", "points"].forEach(x => {
+    const th = document.createElement("th"); th.textContent = x; head.append(th); });
+  for(const x of rows){
+    const tr = t.insertRow(); if(x.name === "hero") tr.className = "hero";
+    [x.name, x.stack, x.points].forEach(v => { tr.insertCell().textContent = v; });
+  }
+  $("standnote").textContent = final ? "final result for this table" : "result when this table finished";
+}
+
+function loadReplays(data){
+  if(!Array.isArray(data) || !data[0] || !data[0].hands) throw new Error("not a replay");
+  replays = data; table = 0;
+  const sel = $("tablesel"); sel.innerHTML = "";
+  data.forEach((r, i) => { const o = document.createElement("option");
+    o.value = i; o.textContent = "table " + r.table; sel.append(o); });
+  standings(false); loadHand(0, true); render();
+}
+
+$("playbtn").onclick = () => setPlaying(!playing);
+$("stepbtn").onclick = () => { setPlaying(false); advance(); };
+$("nexthand").onclick = () => { setPlaying(false); loadHand(hand + 1); };
+$("prevhand").onclick = () => { setPlaying(false); loadHand(hand - 1); };
+$("handslider").oninput = e => { setPlaying(false); loadHand(+e.target.value, true); };
+$("tablesel").onchange = e => { table = +e.target.value; standings(false); loadHand(0, true); };
+$("speed").oninput = e => { $("speedlabel").textContent = SPEEDS[e.target.value] + "×"; };
+$("filein").onchange = e => {
+  const f = e.target.files[0]; if(!f) return;
+  f.text().then(t => loadReplays(JSON.parse(t)))
+    .catch(() => log("<b>could not read that file as a replay</b>"));
+};
+document.addEventListener("keydown", e => {
+  if(e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
+  if(e.key === " "){ e.preventDefault(); setPlaying(!playing); }
+  if(e.key === "ArrowRight"){ setPlaying(false); advance(); }
+});
+
+// the artifact publishes replay.json next to the page while a local checkout
+// serves it from the results folder so both paths are tried in order
+(async function boot(){
+  for(const path of ["replay.json", "../results/replays/demo.json"]){
+    try{ const res = await fetch(path); if(res.ok){ loadReplays(await res.json()); return; } }
+    catch(err){}
+  }
+  log("<b>no replay found</b> — record one with <b>python -m sim.record</b> and load the json with the file picker above");
+})();
+</script>

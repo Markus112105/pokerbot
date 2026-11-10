@@ -1,0 +1,38 @@
+{
+  "game": "kuhn",
+  "algorithm": "CFR+ (regret matching+, linear averaging)",
+  "iterations": 200000,
+  "infosets": 12,
+  "checkpoints": [
+    {
+      "iteration": 50000,
+      "value_player0": -0.055612343427669075,
+      "exploitability": 0.0006832813196363807,
+      "seconds": 4.895
+    },
+    {
+      "iteration": 100000,
+      "value_player0": -0.055595601870119304,
+      "exploitability": 0.0004836977170243756,
+      "seconds": 9.721
+    },
+    {
+      "iteration": 150000,
+      "value_player0": -0.05558821598759475,
+      "exploitability": 0.0003947192443889691,
+      "seconds": 14.621
+    },
+    {
+      "iteration": 200000,
+      "value_player0": -0.05558381969470058,
+      "exploitability": 0.0003418723654017991,
+      "seconds": 19.681
+    }
+  ],
+  "final": {
+    "iteration": 200000,
+    "value_player0": -0.05558381969470058,
+    "exploitability": 0.0003418723654017991,
+    "seconds": 19.681
+  }
+}

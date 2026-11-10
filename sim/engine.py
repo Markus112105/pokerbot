@@ -67,7 +67,10 @@ class Engine:
     """One independent table; public states contain only the acting hole cards."""
 
     def __init__(self, bots, seed=1, payouts=DEFAULT_PAYOUTS, cap=200,
-                 blinds=DEFAULT_BLINDS, chips=2000, shuffle=True):
+                 blinds=DEFAULT_BLINDS, chips=2000, shuffle=True, observer=None):
+        # observer is a callable fed rich replay events including private
+        # cards -- it is not a player so bot-facing privacy is unchanged
+        self.observer = observer
         if not 2 <= len(bots) <= 8 or len(payouts) != len(bots):
             raise ValueError("need 2-8 bots and one payout per finishing place")
         if cap < 1 or chips < 1 or not blinds or any(a < 1 or b < a for a, b in blinds):
@@ -100,6 +103,10 @@ class Engine:
     def _emit(self, event):
         for bot in self.bots:
             bot.observe(event)
+
+    def _note(self, **event):
+        if self.observer:
+            self.observer(event)
 
     def _pay(self, seat, amount, bets, contributions):
         amount = min(amount, self.stacks[seat])
@@ -207,6 +214,8 @@ class Engine:
                             faced_raise=call > 0 and (street != "preflop" or old_bet > bb),
                             bet_fraction=faced_fraction,
                             all_in=self.stacks[seat] == 0))
+            self._note(type="act", seat=seat, action=kind, street=street,
+                       bets=tuple(bets), stacks=tuple(self.stacks), pot=sum(contributions))
             if pending:
                 seat = self._next(seat, pending)
 
@@ -227,6 +236,9 @@ class Engine:
             bets, contributions, board, contenders = [0]*self.n, [0]*self.n, [], set(alive)
             self._emit(dict(type="hand_start", hand_number=hand, active=alive,
                             stacks=tuple(self.stacks), bb=bb))
+            self._note(type="hand", hand=hand, button=self.button, sb_seat=self.sb_seat,
+                       bb_seat=self.bb_seat, sb=sb, bb=bb, stacks=tuple(self.stacks),
+                       holes={i: holes[i] for i in alive})
             self._pay(self.sb_seat, sb, bets, contributions)
             self._pay(self.bb_seat, bb, bets, contributions)
             first = self._next(self.bb_seat, alive)
@@ -236,6 +248,7 @@ class Engine:
                     board.extend(deck.pop() for _ in range(cards))
                     bets = [0]*self.n
                     first = self._next(self.button, contenders)
+                    self._note(type="board", street=street, board=tuple(board))
                 self._round(first, board, holes, alive, contenders, bets, contributions, bb, sb, hand, street)
                 if len(contenders) == 1:
                     break
@@ -248,6 +261,8 @@ class Engine:
                 awards = settle_pots(contributions, contenders, ranks, self.button)
                 self.stacks = [a+b for a, b in zip(self.stacks, awards)]
             assert sum(self.stacks) == self.total_chips and min(self.stacks) >= 0
+            self._note(type="settle", stacks=tuple(self.stacks),
+                       showdown=sorted(contenders) if len(contenders) > 1 else [])
             busted = [i for i in alive if self.stacks[i] == 0]
             for i in busted:
                 self.bust_hands[i] = hand
@@ -271,6 +286,8 @@ class Engine:
             probabilities = equity(chips, tuple(int(j == rank) for j in range(len(survivors))))
             for i, probability in zip(survivors, probabilities):
                 self.positions[i][rank] = probability
+        self._note(type="finish", points=tuple(self.points), stacks=tuple(self.stacks),
+                   hands=hand)
         return Result([bot.name for bot in self.bots], self.points, self.positions,
                       self.stacks, hand, self.errors, self.timeouts, self.timings,
                       self.timing_seats, len(survivors) > 1, self.timeout_details,

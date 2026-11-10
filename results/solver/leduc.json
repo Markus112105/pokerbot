@@ -1,0 +1,44 @@
+{
+  "game": "leduc",
+  "algorithm": "CFR+ (regret matching+, linear averaging)",
+  "iterations": 25000,
+  "infosets": 303,
+  "checkpoints": [
+    {
+      "iteration": 5000,
+      "value_player0": -0.08618517342715282,
+      "exploitability": 0.018313635798057032,
+      "seconds": 44.423
+    },
+    {
+      "iteration": 10000,
+      "value_player0": -0.08600006748070695,
+      "exploitability": 0.013000083451680355,
+      "seconds": 89.764
+    },
+    {
+      "iteration": 15000,
+      "value_player0": -0.08590265316168236,
+      "exploitability": 0.01065933554996075,
+      "seconds": 133.119
+    },
+    {
+      "iteration": 20000,
+      "value_player0": -0.08583864697610205,
+      "exploitability": 0.009193522057525189,
+      "seconds": 176.288
+    },
+    {
+      "iteration": 25000,
+      "value_player0": -0.08580398045335147,
+      "exploitability": 0.008256734633232649,
+      "seconds": 219.379
+    }
+  ],
+  "final": {
+    "iteration": 25000,
+    "value_player0": -0.08580398045335147,
+    "exploitability": 0.008256734633232649,
+    "seconds": 219.379
+  }
+}
