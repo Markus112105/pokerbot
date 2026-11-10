@@ -1,7 +1,6 @@
 .venv/
 __pycache__/
 *.pyc
-castle_challenge_answers.txt
 results/replays/watch.json
 vendor/
 resume.txt
