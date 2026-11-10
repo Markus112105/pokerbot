@@ -101,9 +101,46 @@ path against the 1 ms budget):
 | naive-pushfold | **5.72** | 3.18 |
 | tight-passive | **3.73** | 3.47 |
 
+Reproduce any row (seeds are recorded in every results file; all runs above
+used seed 1):
+
+```sh
+python -m sim.run --tables 1000 --seed 1                       # mixed lineup row
+python -m sim.run --tables 1000 --lineup always-call --seed 1  # any baseline row
+python -m benchmarks.policy --load                             # the p99 figures
+```
+
 Full reports with histograms, bust timing by blind level, and standard errors
-are in `results/`. Beating self-written baselines is the weakest kind of
+are in `results/`. Timing numbers are hardware claims, measured on an
+Apple-silicon laptop; the benchmark assertions encode the budgets so a rerun
+checks itself. Beating self-written baselines is the weakest kind of
 evidence, which is why the next two sections exist.
+
+## Testing methodology
+
+47 tests run in CI on every push, on both evaluator backends. The structure,
+in order of strength:
+
+- **External oracles over snapshots.** ICM is tested against exhaustive
+  finish-order enumeration; CFR+ against Kuhn poker's closed-form Nash value
+  (-1/18); the pure-Python evaluator against the eval7 C library by pairwise
+  ordering over random boards and by a same-seed equity regeneration that
+  must reproduce the committed table byte for byte.
+- **Engine invariants on every simulated hand.** Chip conservation is
+  asserted after each hand; side pots settle by contribution layers; bust
+  ties and cap payouts must sum to the prize pool; bot states must carry no
+  opponent hole cards.
+- **Determinism and paired comparison.** Every simulator and generator takes
+  a seed, results files record it, and strategy changes are evaluated by
+  same-seed paired 1,000-table runs, adopted only when the improvement
+  exceeds ~2 standard errors (one such change was rejected this way; see the
+  history of `bot/strategy.py`).
+- **Timing separated from noise.** Benchmarks assert budgets (postflop p99
+  < 0.3 ms, cold ICM < 0.1 ms, full decision p99 < 0.5 ms) locally. The
+  simulator charges a timeout only when thread-CPU time exceeds 1 ms;
+  wall-clock overruns with idle CPU are reported separately as host stalls,
+  and GC is deferred to gaps between tables so pauses are never billed to a
+  timed call.
 
 ## Solver: distance from Nash, measured
 
@@ -120,6 +157,21 @@ unexploitable):
 | Leduc hold'em value, 25k iterations (published ~ -0.0856) | -0.08580 |
 | Leduc exploitability | 0.0083 |
 | This repo's push/fold tables, mean over depths 2-15 bb | 0.088 bb/hand |
+
+Reproduce the table:
+
+```sh
+python -m solver.run --game kuhn --iterations 200000 --report-every 50000
+python -m solver.run --game leduc --iterations 25000 --report-every 5000
+python -m solver.matchups --samples 4000      # 169x169 equity matrix, ~2 min
+python -m solver.pushfold_exploit --iterations 1500
+```
+
+Scope note: the 0.088 bb/hand is the exploitability of the **heads-up
+jam/fold subgame** that the push/fold tables play (small blind shove/fold vs
+big blind call/fold, depths 2-15 bb), where exact best response is
+computable. It is not a claim about the full 8-player tournament game, which
+is far too large for exact analysis.
 
 `python -m solver.pushfold_exploit` (after `python -m solver.matchups` builds
 the card-removal-aware 169x169 equity matrix) solves the heads-up jam/fold
